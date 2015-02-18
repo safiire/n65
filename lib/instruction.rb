@@ -112,6 +112,11 @@ module Assembler6502
       ##  Empty lines assemble to nothing
       return nil if sanitized.empty?
 
+      ##  Let's see if this line is an assembler directive
+      directive = Directive.parse(sanitized, address)
+      return directive unless directive.nil?
+
+
       ##  Let's see if this line is a label, and try 
       ##  to create a label for the current address
       label = Label.parse_label(sanitized, address)

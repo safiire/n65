@@ -1,6 +1,6 @@
 # assembler6502
 
-An assembler for the 6502 Chip written in Ruby
+An assembler for the 6502 microprocessor written in Ruby
 
  6502 Assembler
 

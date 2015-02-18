@@ -105,3 +105,13 @@ module Assembler6502
 end
 
 Assembler6502.run
+
+#p Assembler6502::Directive.parse('  .ines {"prog": 1, "char": 0, "mapper": 0, "mirror": 1} ')
+#p Assembler6502::Directive.parse('  .org $423C ')
+#p Assembler6502::Directive.parse('  .incbin "mario.chr" ')
+#p Assembler6502::Directive.parse('  .dw $2FFF ')
+#p Assembler6502::Directive.parse('  .bytes $2F, $FF, $2 ')
+
+
+
+
