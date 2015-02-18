@@ -1,0 +1,1030 @@
+---
+:adc:
+  :description: "ADd with Carry"
+  :flags: 
+    - :s
+    - :v
+    - :z
+    - :c
+  :immediate: 
+    :hex: 0x69
+    :len: 2
+    :cycles: 2
+    :boundry_add: false
+  :zero_page: 
+    :hex: 0x65
+    :len: 2
+    :cycles: 3
+    :boundry_add: false
+  :zero_page_x:
+    :hex: 0x75
+    :len: 2
+    :cycles: 4
+    :boundry_add: false
+  :absolute:
+    :hex: 0x6D
+    :len: 3
+    :cycles: 4
+    :boundry_add: false
+  :absolute_x:
+    :hex: 0x7D
+    :len: 3
+    :cycles: 4
+    :boundry_add: true
+  :absolute_y:
+    :hex: 0x79
+    :len: 3
+    :cycles: 4
+    :boundry_add: true
+  :indirect_x:
+    :hex: 0x61
+    :len: 2
+    :cycles: 6
+    :boundry_add: false
+  :indirect_y:
+    :hex: 0x71
+    :len: 2
+    :cycles: 5
+    :boundry_add: true
+
+:and:
+  :description: "bitwise AND with accumulator"
+  :flags: 
+    - :s
+    - :z
+  :immediate:
+    :hex: 0x29
+    :len: 2
+    :cycles: 2
+    :boundry_add: false
+  :zero_page:
+    :hex: 0x25
+    :len: 2
+    :cycles: 3
+    :boundry_add: false
+  :zero_page_x:
+    :hex: 0x35
+    :len: 2
+    :cycles: 4
+    :boundry_add: false
+  :absolute:
+    :hex: 0x2D
+    :len: 3
+    :cycles: 4
+    :boundry_add: false
+  :absolute_x:
+    :hex: 0x3D
+    :len: 3
+    :cycles: 4
+    :boundry_add: true
+  :absolute_y:
+    :hex: 0x39
+    :len: 3
+    :cycles: 4
+    :boundry_add: true
+  :indirect_x:
+    :hex: 0x21
+    :len: 2
+    :cycles: 6
+    :boundry_add: false
+  :indirect_y:
+    :hex: 0x31
+    :len: 2
+    :cycles: 5
+    :boundry_add: true
+
+:asl:
+  :description: "Arithmetic Shift Left"
+  :flags: 
+    - :s
+    - :z
+    - :c
+  :implied:
+    :hex: 0xA
+    :len: 1
+    :cycles: 2
+    :boundry_add: false
+  :zero_page:
+    :hex: 0x6
+    :len: 2
+    :cycles: 5
+    :boundry_add: false
+  :zero_page_x:
+    :hex: 0x16
+    :len: 2
+    :cycles: 6
+    :boundry_add: false
+  :absolute:
+    :hex: 0xE
+    :len: 3
+    :cycles: 6
+    :boundry_add: false
+  :absolute_x:
+    :hex: 0x1E
+    :len: 3
+    :cycles: 7
+    :boundry_add: false
+
+:bit:
+  :description: "test BITs"
+  :flags: 
+    - :n
+    - :v
+    - :z
+  :zero_page:
+    :hex: 0x24
+    :len: 2
+    :cycles: 3
+    :boundry_add: false
+  :absolute:
+    :hex: 0x2C
+    :len: 3
+    :cycles: 4
+    :boundry_add: false
+
+:bpl:
+  :branch: true
+  :description: "Branch on PLus"
+  :flags:  []
+  :relative:
+    :hex: 0x10
+    :len: 2
+:bmi:
+  :branch: true
+  :description: "Branch on MInus"
+  :flags:  []
+  :relative:
+    :hex: 0x30
+    :len: 2
+:bvc:
+  :branch: true
+  :description: "Branch on oVerflow Clear"
+  :flags:  []
+  :relative:
+    :hex: 0x50
+    :len: 2
+:bvs:
+  :branch: true
+  :description: "Branch on oVerflow Set"
+  :flags:  []
+  :relative:
+    :hex: 0x70
+    :len: 2
+:bcc:
+  :branch: true
+  :description: "Branch on Carry Clear"
+  :flags:  []
+  :relative:
+    :hex: 0x90
+    :len: 2
+:bcs:
+  :branch: true
+  :description: "Branch on Carry Set"
+  :flags:  []
+  :relative:
+    :hex: 0xB0
+    :len: 2
+:bne:
+  :branch: true
+  :description: "Branch on Not Equal"
+  :flags:  []
+  :relative:
+    :hex: 0xD0
+    :len: 2
+:beq:
+  :branch: true
+  :description: "Branch on Equal"
+  :flags:  []
+  :relative:
+    :hex: 0xF0
+    :len: 2
+
+
+:brk:
+  :description: "BReaK"
+  :flags: 
+    - :b
+  :implied: 
+    :hex: 0x0
+    :len: 1
+    :cycles: 7
+    :boundry_add: false
+
+:cmp:
+  :description: "CoMPare accumulator"
+  :flags: 
+    - :s
+    - :c
+    - :z
+  :immediate:
+    :hex: 0xC9
+    :len: 2
+    :cycles: 2
+    :boundry_add: false
+  :zero_page:
+    :hex: 0xC5
+    :len: 2
+    :cycles: 3
+    :boundry_add: false
+  :zero_page_x:
+    :hex: 0xD5
+    :len: 2
+    :cycles: 4
+    :boundry_add: false
+  :absolute:
+    :hex: 0xCD
+    :len: 3
+    :cycles: 4
+    :boundry_add: false
+  :absolute_x:
+    :hex: 0xDD
+    :len: 3
+    :cycles: 4
+    :boundry_add: true
+  :absolute_y:
+    :hex: 0xD9
+    :len: 3
+    :cycles: 4
+    :boundry_add: true
+  :indirect_x:
+    :hex: 0xC1
+    :len: 2
+    :cycles: 6
+    :boundry_add: false
+  :indirect_y:
+    :hex: 0xD1
+    :len: 2
+    :cycles: 5
+    :boundry_add: true
+
+:cpx:
+  :description: "ComPare X register"
+  :flags: 
+    - :s
+    - :c
+    - :z
+  :immediate:
+    :hex: 0xE0
+    :len: 2
+    :cycles: 2
+    :boundry_add: false
+  :zero_page:
+    :hex: 0xE4
+    :len: 2
+    :cycles: 3
+    :boundry_add: false
+  :absolute:
+    :hex: 0xEC
+    :len: 3
+    :cycles: 4
+    :boundry_add: false
+
+:cpy:
+  :description: "ComPare X register"
+  :flags: 
+    - :s
+    - :c
+    - :z
+  :immediate:
+    :hex: 0xC0
+    :len: 2
+    :cycles: 2
+    :boundry_add: false
+  :zero_page:
+    :hex: 0xC4
+    :len: 2
+    :cycles: 3
+    :boundry_add: false
+  :absolute:
+    :hex: 0xCC
+    :len: 3
+    :cycles: 4
+    :boundry_add: false
+
+:dec:
+  description: "DECrement memory"
+  :flags: 
+    - :s
+    - :z
+  :zero_page:
+    :hex: 0xC6
+    :len: 2
+    :cycles: 5
+    :boundry_add: false
+  :zero_page_x:
+    :hex: 0xD6
+    :len: 2
+    :cycles: 6
+    :boundry_add: false
+  :absolute:
+    :hex: 0xCE
+    :len: 3
+    :cycles: 6
+    :boundry_add: false
+  :absolute_x:
+    :hex: 0xDE
+    :len: 3
+    :cycles: 7
+    :boundry_add: false
+
+:eor:
+  :description: "bitwise Exclusive OR"
+  :flags: 
+    - :s
+    - :z
+  :immediate:
+    :hex: 0x49
+    :len: 2
+    :cycles: 2
+    :boundry_add: false
+  :zero_page:
+    :hex: 0x45
+    :len: 2
+    :cycles: 3
+    :boundry_add: false
+  :zero_page_x:
+    :hex: 0x55
+    :len: 2
+    :cycles: 4
+    :boundry_add: false
+  :absolute:
+    :hex: 0x4D
+    :len: 3
+    :cycles: 4
+    :boundry_add: false
+  :absolute_x:
+    :hex: 0x5D
+    :len: 3
+    :cycles: 4
+    :boundry_add: true
+  :absolute_y:
+    :hex: 0x59
+    :len: 3
+    :cycles: 4
+    :boundry_add: true
+  :indirect_x:
+    :hex: 0x41
+    :len: 2
+    :cycles: 6
+    :boundry_add: false
+  :indirect_y:
+    :hex: 0x51
+    :len: 2
+    :cycles: 5
+    :boundry_add: true
+
+:clc:
+  :description: "CLear Carry"
+  :flags: 
+    - :c
+  :implied:
+    :hex: 0x18
+    :len: 1
+    :cycles: 2
+:sec:
+  :description: "SEt Carry"
+  :flags: 
+    - :c
+  :implied:
+    :hex: 0x38
+    :len: 1
+    :cycles: 2
+:cli:
+  :description: "CLear Interrupt"
+  :flags: 
+    - :i
+  :implied:
+    :hex: 0x58
+    :len: 1
+    :cycles: 2
+:sei:
+  :description: "SEt Interrupt"
+  :flags: 
+    - :i
+  :implied:
+    :hex: 0x78
+    :len: 1
+    :cycles: 2
+:clv:
+  :description: "CLear oVerflow"
+  :flags: 
+    - :v
+  :implied:
+    :hex: 0xB8
+    :len: 1
+    :cycles: 2
+:cld:
+  :description: "CLear Decimal"
+  :flags: 
+    - :d
+  :implied:
+    :hex: 0xD8
+    :len: 1
+    :cycles: 2
+:sed:
+  :description: "SEt Decimal"
+  :flags: 
+    - :d
+  :implied:
+    :hex: 0xF8
+    :len: 1
+    :cycles: 2
+
+:inc:
+  :description: "INCrement memory"
+  :flags: 
+    - :s
+    - :z
+  :zero_page:
+    :hex: 0xE6
+    :len: 2
+    :cycles: 5
+    :boundry_add: false
+  :zero_page_x:
+    :hex: 0xF6
+    :len: 2
+    :cycles: 6
+    :boundry_add: false
+  :absolute:
+    :hex: 0xEE
+    :len: 3
+    :cycles: 6
+    :boundry_add: false
+  :absolute_x:
+    :hex: 0xFE
+    :len: 3
+    :cycles: 7
+    :boundry_add: false
+
+:jmp:
+  :description: "JuMP"
+  :flags:  []
+  :absolute:
+    :hex: 0x4C
+    :len: 3
+    :cycles: 3
+    :boundry_add: false
+  :indirect:
+    :hex: 0x6C
+    :len: 3
+    :cycles: 5
+    :boundry_add: false
+
+:jsr:
+  :description: "Jump to SubRoutine"
+  :flags:  []
+  :absolute:
+    :hex: 0x20
+    :len: 3
+    :cycles: 6
+    :boundry_add: false
+
+:lda:
+  :description: "LoaD Accumulator"
+  :flags: 
+    - :s
+    - :z
+  :immediate:
+    :hex: 0xA9
+    :len: 2
+    :cycles: 2
+    :boundry_add: false
+  :zero_page:
+    :hex: 0xA5
+    :len: 2
+    :cycles: 3
+    :boundry_add: false
+  :zero_page_x:
+    :hex: 0xB5
+    :len: 2
+    :cycles: 4
+    :boundry_add: false
+  :absolute:
+    :hex: 0xAD
+    :len: 3
+    :cycles: 4
+    :boundry_add: false
+  :absolute_x:
+    :hex: 0xBD
+    :len: 3
+    :cycles: 4
+    :boundry_add: true
+  :absolute_y:
+    :hex: 0xB9
+    :len: 3
+    :cycles: 4
+    :boundry_add: true
+  :indirect_x:
+    :hex: 0xA1
+    :len: 2
+    :cycles: 6
+    :boundry_add: false
+  :indirect_y:
+    :hex: 0xB1
+    :len: 2
+    :cycles: 5
+    :boundry_add: true
+
+:ldx:
+  :description: "LoaD X register"
+  :flags: 
+    - :s
+    - :z
+  :immediate:
+    :hex: 0xA2
+    :len: 2
+    :cycles: 2
+    :boundry_add: false
+  :zero_page:
+    :hex: 0xA6
+    :len: 2
+    :cycles: 3
+    :boundry_add: false
+  :zero_page_y:
+    :hex: 0xB6
+    :len: 2
+    :cycles: 4
+    :boundry_add: false
+  :absolute:
+    :hex: 0xAE
+    :len: 3
+    :cycles: 4
+    :boundry_add: false
+  :absolute_y:
+    :hex: 0xBE
+    :len: 3
+    :cycles: 4
+    :boundry_add: true
+
+:ldy:
+  :description: "LoaD Y register"
+  :flags: 
+    - :s
+    - :z
+  :immediate:
+    :hex: 0xA0
+    :len: 2
+    :cycles: 2
+    :boundry_add: false
+  :zero_page:
+    :hex: 0xA4
+    :len: 2
+    :cycles: 3
+    :boundry_add: false
+  :zero_page_x:
+    :hex: 0xB4
+    :len: 2
+    :cycles: 4
+    :boundry_add: false
+  :absolute:
+    :hex: 0xAC
+    :len: 3
+    :cycles: 4
+    :boundry_add: false
+  :absolute_x:
+    :hex: 0xBC
+    :len: 3
+    :cycles: 4
+    :boundry_add: true
+
+:lsr:
+  :description: "Logical Shift Right"
+  :flags: 
+    - :s
+    - :z
+    - :c
+  :implied:
+    :hex: 0x4A
+    :len: 1
+    :cycles: 2
+    :boundry_add: false
+  :zero_page:
+    :hex: 0x46
+    :len: 2
+    :cycles: 5
+    :boundry_add: false
+  :zero_page_x:
+    :hex: 0x56
+    :len: 2
+    :cycles: 6
+    :boundry_add: false
+  :absolute:
+    :hex: 0x4E
+    :len: 3
+    :cycles: 6
+    :boundry_add: false
+  :absolute_x:
+    :hex: 0x5E
+    :len: 3
+    :cycles: 7
+    :boundry_add: false
+
+:nop:
+  :description: "No OPeration"
+  :flags:  []
+  :implied:
+    :hex: 0xEA
+    :len: 1
+    :cycles: 2
+    :boundry_add: false
+
+:ora:
+  :description: "bitwise OR with Accumulator"
+  :flags: 
+    - :s
+    - :z
+  :immediate:
+    :hex: 0x9
+    :len: 2
+    :cycles: 2
+    :boundry_add: false
+  :zero_page:
+    :hex: 0x5
+    :len: 2
+    :cycles: 3
+    :boundry_add: false
+  :zero_page_x:
+    :hex: 0x15
+    :len: 2
+    :cycles: 4
+    :boundry_add: false
+  :absolute:
+    :hex: 0xD
+    :len: 3
+    :cycles: 4
+    :boundry_add: false
+  :absolute_x:
+    :hex: 0x1D
+    :len: 3
+    :cycles: 4
+    :boundry_add: true
+  :absolute_y:
+    :hex: 0x19
+    :len: 3
+    :cycles: 4
+    :boundry_add: true
+  :indirect_x:
+    :hex: 0x1
+    :len: 2
+    :cycles: 6
+    :boundry_add: false
+  :indirect_y:
+    :hex: 0x11
+    :len: 2
+    :cycles: 5
+    :boundry_add: true
+
+:tax:
+  :description: "Transfer A to X"
+  :flags: 
+    - :s
+    - :z
+  :implied:
+    :hex: 0xAA
+    :len: 1
+    :cycles: 2
+    :boundry_add: false
+:txa:
+  :description: "Transfer X to A"
+  :flags: 
+    - :s
+    - :z
+  :implied:
+    :hex: 0x8A
+    :len: 1
+    :cycles: 2
+    :boundry_add: false
+:dex:
+  :description: "DEcrement X"
+  :flags: 
+    - :s
+    - :z
+  :implied:
+    :hex: 0xCA
+    :len: 1
+    :cycles: 2
+    :boundry_add: false
+:inx:
+  :description: "INcrement X"
+  :flags: 
+    - :s
+    - :z
+  :implied:
+    :hex: 0xEA
+    :len: 1
+    :cycles: 2
+    :boundry_add: false
+:tay:
+  :description: "Transfer A to Y"
+  :flags: 
+    - :s
+    - :z
+  :implied:
+    :hex: 0xA8
+    :len: 1
+    :cycles: 2
+    :boundry_add: false
+:tya:
+  :description: "Transfer Y to A"
+  :flags: 
+    - :s
+    - :z
+  :implied:
+    :hex: 0x98
+    :len: 1
+    :cycles: 2
+    :boundry_add: false
+:dey:
+  :description: "DEcrement Y"
+  :flags: 
+    - :s
+    - :z
+  :implied:
+    :hex: 0x88
+    :len: 1
+    :cycles: 2
+    :boundry_add: false
+:iny:
+  :description: "INcrement Y"
+  :flags: 
+    - :s
+    - :z
+  :implied:
+    :hex: 0xC8
+    :len: 1
+    :cycles: 2
+    :boundry_add: false
+
+:rol:
+  :description: "ROtate Left"
+  :flags: 
+    - :s
+    - :z
+    - :c
+  :implied:
+    :hex: 0x2A
+    :len: 1
+    :cycles: 2
+    :boundry_add: false
+  :zero_page:
+    :hex: 0x26
+    :len: 2
+    :cycles: 5
+    :boundry_add: false
+  :zero_page_x:
+    :hex: 0x36
+    :len: 2
+    :cycles: 6
+    :boundry_add: false
+  :absolute:
+    :hex: 0x2E
+    :len: 3
+    :cycles: 6
+    :boundry_add: false
+  :absolute_x:
+    :hex: 0x3E
+    :len: 3
+    :cycles: 7
+    :boundry_add: false
+
+:ror:
+  :description: "ROtate Right"
+  :flags: 
+    - :s
+    - :z
+    - :c
+  :implied:
+    :hex: 0x6A
+    :len: 1
+    :cycles: 2
+    :boundry_add: false
+  :zero_page:
+    :hex: 0x66
+    :len: 2
+    :cycles: 5
+    :boundry_add: false
+  :zero_page_x:
+    :hex: 0x76
+    :len: 2
+    :cycles: 6
+    :boundry_add: false
+  :absolute:
+    :hex: 0x6E
+    :len: 3
+    :cycles: 6
+    :boundry_add: false
+  :absolute_x:
+    :hex: 0x7E
+    :len: 3
+    :cycles: 7
+    :boundry_add: false
+
+:rti:
+  :description: "ReTurn from Interrupt, TODO: Flags could be wrong"
+  :flags: 
+    - :n
+    - :v
+    - :u
+    - :b
+    - :d
+    - :i
+    - :z
+    - :c
+  :implied:
+    :hex: 0x40
+    :len: 1
+    :cycles: 6
+    :boundry_add: false
+
+:rts:
+  :description: "ReTurn from Subroutine"
+  :flags:  []
+  :implied:
+    :hex: 0x60
+    :len: 1
+    :cycles: 6
+    :boundry_add: false
+
+:sbc:
+  :description: "SuBtract with Carry"
+  :flags: 
+    - :s
+    - :v
+    - :z
+    - :c
+  :immediate:
+    :hex: 0xE9
+    :len: 2
+    :cycles: 2
+    :boundry_add: false
+  :zero_page:
+    :hex: 0xE5
+    :len: 2
+    :cycles: 3
+    :boundry_add: false
+  :zero_page_x:
+    :hex: 0xF5
+    :len: 2
+    :cycles: 4
+    :boundry_add: false
+  :absolute:
+    :hex: 0xED
+    :len: 3
+    :cycles: 4
+    :boundry_add: false
+  :absolute_x:
+    :hex: 0xFD
+    :len: 3
+    :cycles: 4
+    :boundry_add: true
+  :absolute_y:
+    :hex: 0xF9
+    :len: 3
+    :cycles: 4
+    :boundry_add: true
+  :indirect_x:
+    :hex: 0xE1
+    :len: 2
+    :cycles: 6
+    :boundry_add: false
+  :indirect_y:
+    :hex: 0xF1
+    :len: 2
+    :cycles: 5
+    :boundry_add: true
+
+:sta:
+  :description: "STore Accumulator"
+  :flags: []
+  :zero_page:
+    :hex: 0x85
+    :len: 2
+    :cycles: 3
+    :boundry_add: false
+  :zero_page_x:
+    :hex: 0x95
+    :len: 2
+    :cycles: 4
+    :boundry_add: false
+  :absolute:
+    :hex: 0x8D
+    :len: 3
+    :cycles: 4
+    :boundry_add: false
+  :absolute_x:
+    :hex: 0x9D
+    :len: 3
+    :cycles: 5
+    :boundry_add: false
+  :absolute_y:
+    :hex: 0x99
+    :len: 3
+    :cycles: 5
+    :boundry_add: false
+  :indirect_x:
+    :hex: 0x81
+    :len: 2
+    :cycles: 6
+    :boundry_add: false
+  :indirect_y:
+    :hex: 0x91
+    :len: 2
+    :cycles: 6
+    :boundry_add: false
+
+:txs:
+  :description: "Transfer X to Stack ptr"
+  :flags: []
+  :implied:
+    :hex: 0x9A
+    :len: 1
+    :cycles: 2
+    :boundry_add: false
+:tsx:
+  :description: "Transfer Stack ptr to X"
+  :flags: []
+  :implied:
+    :hex: 0xBA
+    :len: 1
+    :cycles: 2
+    :boundry_add: false
+
+:pha:
+  :description: "PusH Accumulator"
+  :flags: []
+  :implied:
+    :hex: 0x48
+    :len: 1
+    :cycles: 3
+    :boundry_add: false
+:pla:
+  :description: "PuLl Accumulator"
+  :flags: []
+  :implied:
+    :hex: 0x68
+    :len: 1
+    :cycles: 4
+    :boundry_add: false
+
+:php:
+  :description: "PusH Processor status"
+  :flags: []
+  :implied:
+    :hex: 0x08
+    :len: 1
+    :cycles: 3
+    :boundry_add: false
+:plp:
+  :description: "PuLl Processor status"
+  :flags: 
+    - :n
+    - :v
+    - :u
+    - :b
+    - :d
+    - :i
+    - :z
+    - :c
+  :implied:
+    :hex: 0x28
+    :len: 1
+    :cycles: 4
+    :boundry_add: false
+
+:stx:
+  :description: "STore X register"
+  :flags:  []
+  :zero_page:
+    :hex: 0x86
+    :len: 2
+    :cycles: 3
+    :boundry_add: false
+  :zero_page_y:
+    :hex: 0x96
+    :len: 2
+    :cycles: 4
+    :boundry_add: false
+  :absolute:
+    :hex: 0x8E
+    :len: 3
+    :cycles: 4
+    :boundry_add: false
+
+:sty:
+  :description: "STore Y register"
+  :flags:  []
+  :zero_page:
+    :hex: 0x84
+    :len: 2
+    :cycles: 3
+    :boundry_add: false
+  :zero_page_x:
+    :hex: 0x94
+    :len: 2
+    :cycles: 4
+    :boundry_add: false
+  :absolute:
+    :hex: 0x8C
+    :len: 3
+    :cycles: 4
+    :boundry_add: false

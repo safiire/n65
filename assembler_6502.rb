@@ -1,0 +1,91 @@
+#!/usr/bin/env ruby
+###############################################################################
+##  6502 Assembler
+##
+##  Usage: ./assembler_6502.rb <infile.asm>
+##
+##  This is a pretty straightfoward assembler, that is currently set up
+##  to produce iNES ROM formatted binaries from simple assembly listings.
+##  It is good at knowing which addressing modes are and are not allowed for 
+##  each instruction, and contains some examples of correct syntax.
+##
+##  Parsing is done by Regular Expression, because, well the language is
+##  so regular, it actually took less time than anything else I've tried
+##  to parse in the past, including Scheme using parsec.
+##  
+##  It handles labels, and does a two pass assembly, first assembling
+##  the byte codes, and then going back and filling in the proper addresses
+##  where labels were used.
+##
+##  I have used this to compile some code for the NES, and it ran correctly
+##  on FCEUX, got it to make some sounds, etc.
+##
+##  Some Todos:
+##  - I need to add the .byte operator to add data bytes.
+##  - I need to add the #<$800 and #>$800 style operators to select the
+##    MSB and LSB of immediate values during assembly.
+##  - I need to make the text/code/data sections easier to configure, it is 
+##    currently set to 0x8000 like NES Prog ROM
+##  - I need to add commandline options through the OptionParser library
+##  - I may make this into a Rubygem
+##  - I need to split the project up into one class per file like usual.
+##  - Maybe I can put some better error messages.
+##  - I should just make a 6502 CPU emulator probably now too.
+
+
+require 'yaml'
+require 'ostruct'
+require 'optparse'
+require_relative 'lib/directive'
+require_relative 'lib/assembler'
+require_relative 'lib/instruction'
+require_relative 'lib/label'
+
+module Assembler6502
+
+  #####
+  ##  Load in my OpCode definitions
+  MyDirectory = File.expand_path(File.dirname(__FILE__))
+  OpCodes = YAML.load_file("#{MyDirectory}/data/opcodes.yaml")
+
+  ####
+  ##  Clean up a line of assembly
+  def sanitize_line(asm_line)
+    sanitized = asm_line.split(';').first || ""
+    sanitized.strip.chomp
+  end
+  module_function :sanitize_line
+
+
+  ####
+  ##  Run the assembler using commandline arguments
+  def run
+    options = {:in_file => nil, :out_file => 'a.nes'}
+    parser = OptionParser.new do |opts|
+      opts.banner = "Usage: #{$0} [options]"
+
+      opts.on('-o', '--outfile filename', 'outfile') do |out_file|
+        options[:out_file] = out_file;
+      end
+
+      opts.on('-h', '--help', 'Displays Help') do
+        puts opts
+        exit
+      end
+    end
+    parser.parse!(ARGV)
+    options[:in_file] = ARGV.shift
+    unless ARGV.empty?
+      STDERR.puts "Ignoring extra commandline options #{ARGV.join(' ')}"
+    end
+    if options.values.any?(&:nil?)
+      STDERR.puts "Missing options try --help"
+      exit(1)
+    end
+    Assembler6502::Assembler.from_file(options[:in_file], options[:out_file])
+  end
+  module_function :run
+
+end
+
+Assembler6502.run
