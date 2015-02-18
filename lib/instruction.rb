@@ -153,7 +153,7 @@ module Assembler6502
       end
 
       ##  We just don't recognize this line of asm, it must be a Syntax Error
-      fail(SyntaxError, sprintf("%.4X: #{asm_line}", address))
+      fail(SyntaxError, sprintf("%.4X: ", address) +  asm_line)
     end
 
 

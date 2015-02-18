@@ -710,7 +710,7 @@
     - :s
     - :z
   :implied:
-    :hex: 0xEA
+    :hex: 0xE8
     :len: 1
     :cycles: 2
     :boundry_add: false
