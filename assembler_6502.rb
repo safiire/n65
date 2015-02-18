@@ -60,7 +60,7 @@ module Assembler6502
   ####
   ##  Run the assembler using commandline arguments
   def run
-    options = {:in_file => nil, :out_file => 'a.nes'}
+    options = {:out_file => nil}
     parser = OptionParser.new do |opts|
       opts.banner = "Usage: #{$0} [options]"
 
@@ -74,15 +74,31 @@ module Assembler6502
       end
     end
     parser.parse!(ARGV)
-    options[:in_file] = ARGV.shift
-    unless ARGV.empty?
-      STDERR.puts "Ignoring extra commandline options #{ARGV.join(' ')}"
+
+    ##  For now let's just handle one file at a time.
+    if ARGV.size != 1
+      STDERR.puts "Can only assemble one input file at once :("
+      exit(1)
     end
+    input_file = ARGV.shift
+
+    ##  Make sure the input file exists
+    unless File.exists?(input_file)
+      STDERR.puts "Input file #{input_file} does not exist"
+      exit(1)
+    end
+    
+    ##  Maybe they didn't provide an output file name, so we'll guess
+    if options[:out_file].nil?
+      ext = File.extname(input_file)
+      options[:out_file] = input_file.gsub(ext, '') + '.nes'
+    end
+
     if options.values.any?(&:nil?)
       STDERR.puts "Missing options try --help"
       exit(1)
     end
-    Assembler6502::Assembler.from_file(options[:in_file], options[:out_file])
+    Assembler6502::Assembler.from_file(input_file, options[:out_file])
   end
   module_function :run
 
