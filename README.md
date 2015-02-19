@@ -20,6 +20,8 @@ An NES assembler for the 6502 microprocessor written in Ruby
   I have used this to compile some code for the NES, and it ran correctly
   on FCEUX, got it to make some sounds, load tiles, sprites, and scrolling.
 
+  ![Scrolling NES Demo](assembler_demo.png)
+
   Some Todos:
   - I may make this into a Rubygem
   - Maybe I can put some better error messages.
