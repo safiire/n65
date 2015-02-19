@@ -42,6 +42,10 @@ module Assembler6502
   ##  The Main Assembler
   class Assembler
 
+    ##  Custom exceptions
+    class INESHeaderNotFound < StandardError; end
+
+
     ####
     ##  Assemble from a file to a file
     def self.from_file(infile, outfile)
@@ -79,8 +83,8 @@ module Assembler6502
         when INESHeader
           fail(SyntaxError, "Already got ines header") unless @ines_header.nil?
           @ines_header = parsed_line
-          puts "\tWriting iNES Header"
-          memory.write(0x0, parsed_line.emit_bytes)
+          puts "\tGot iNES Header"
+          #memory.write(0x0, parsed_line.emit_bytes)
 
         when Org
           address = parsed_line.address
@@ -102,7 +106,8 @@ module Assembler6502
           puts "\tAdvanced address to %X" % address
 
         when IncBin
-          puts "\tI Don't support .incbin yet"
+          fail("\tI Don't support .incbin yet")
+
 
         when DW
           if parsed_line.unresolved_symbols?
@@ -116,9 +121,16 @@ module Assembler6502
 
         when Bytes
           bytes = parsed_line.emit_bytes
-          puts "\tWriting raw bytes to memory #{bytes.inspect}"
+          puts "\tWriting raw #{bytes.size} bytes to #{sprintf("$%X", address)}"
           memory.write(address, bytes)
           address += bytes.size
+
+        when ASCII
+          bytes = parsed_line.emit_bytes
+          puts "\tWriting ascii string to memory \"#{bytes.pack('C*')}\""
+          memory.write(address, bytes)
+          address += bytes.size
+
         else
           fail(SyntaxError, sprintf("%.4X: Failed to parse: #{parsed_line}", address))
         end
@@ -145,11 +157,37 @@ module Assembler6502
     ##  beginning at 0xC000, this should reach right up to the interrupt vectors
     def assemble
       virtual_memory = assemble_in_virtual_memory
-      rom_size = 16 + (0xffff - 0xc000)
-      nes_rom = MemorySpace.new(rom_size)
-      nes_rom.write(0x0, virtual_memory.read(0x0, 0x10))
-      nes_rom.write(0x10, virtual_memory.read(0xC000, 0x4000))
+
+      ##  First we need to be sure we have an iNES header
+      fail(INESHeaderNotFound) if @ines_header.nil?
+
+      ##  Create memory to hold the ROM
+      nes_rom = MemorySpace.new(0x10 + 0x4000)
+
+      ##  First write the iNES header itself
+      nes_rom.write(0x0, @ines_header.emit_bytes)
+
+      ##  Write only one PROG section from 0xC000
+      start_address = 0xC000
+      length = 0x4000
+      prog_rom = virtual_memory.read(start_address, length)
+      write_start = 0x10
+      nes_rom.write(write_start, prog_rom)
+
+      ##  Now try writing one CHR-ROM section from 0x0000
+      start_address = 0x0000
+      length = 0x4000
+      char_rom = virtual_memory.read(start_address, length)
+      write_start = 0x10 + 0x4000
+      nes_rom.write(write_start, char_rom)
+
       nes_rom.emit_bytes
+
+      #rom_size = 16 + (0xffff - 0xc000)
+      #nes_rom = MemorySpace.new(rom_size)
+      #nes_rom.write(0x0, virtual_memory.read(0x0, 0x10))
+      #nes_rom.write(0x10, virtual_memory.read(0xC000, 0x4000))
+      #nes_rom.emit_bytes
     end
 
   end

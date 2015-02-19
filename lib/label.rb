@@ -7,7 +7,7 @@ module Assembler6502
 
     def self.parse_label(asm_line, address)
       sanitized = Assembler6502.sanitize_line(asm_line)
-      match_data = sanitized.match(/([A-za-z][A-Za-z0-9]+):/)
+      match_data = sanitized.match(/#{Instruction::Sym}:/)
 
       unless match_data.nil?
         _, label = match_data.to_a

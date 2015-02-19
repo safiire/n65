@@ -21,14 +21,9 @@
 ##  on FCEUX, got it to make some sounds, etc.
 ##
 ##  Some Todos:
-##  - I need to add the .byte operator to add data bytes.
 ##  - I need to add the #<$800 and #>$800 style operators to select the
 ##    MSB and LSB of immediate values during assembly.
-##  - I need to make the text/code/data sections easier to configure, it is 
-##    currently set to 0x8000 like NES Prog ROM
-##  - I need to add commandline options through the OptionParser library
 ##  - I may make this into a Rubygem
-##  - I need to split the project up into one class per file like usual.
 ##  - Maybe I can put some better error messages.
 ##  - I should just make a 6502 CPU emulator probably now too.
 
@@ -62,7 +57,7 @@ module Assembler6502
   def run
     options = {:out_file => nil}
     parser = OptionParser.new do |opts|
-      opts.banner = "Usage: #{$0} [options]"
+      opts.banner = "Usage: #{$0} [options] <input_file.asm>"
 
       opts.on('-o', '--outfile filename', 'outfile') do |out_file|
         options[:out_file] = out_file;
@@ -105,13 +100,3 @@ module Assembler6502
 end
 
 Assembler6502.run
-
-#p Assembler6502::Directive.parse('  .ines {"prog": 1, "char": 0, "mapper": 0, "mirror": 1} ')
-#p Assembler6502::Directive.parse('  .org $423C ')
-#p Assembler6502::Directive.parse('  .incbin "mario.chr" ')
-#p Assembler6502::Directive.parse('  .dw $2FFF ')
-#p Assembler6502::Directive.parse('  .bytes $2F, $FF, $2 ')
-
-
-
-

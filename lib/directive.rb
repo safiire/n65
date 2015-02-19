@@ -5,12 +5,24 @@ module Assembler6502
   ####
   ##  This class can setup an iNES Header
   class INESHeader 
+    attr_reader :prog, :char, :mapper, :mirror
 
     ####
     ##  Construct with the right values
     def initialize(prog = 0x1, char = 0x0, mapper = 0x0, mirror = 0x1)
       @prog, @char, @mapper, @mirror = prog, char, mapper, mirror
     end
+
+
+    ####
+    ##  What will the size of the ROM binary be?
+    def rom_size
+      size =  0x10               #  Always have a 16 byte header
+      size += 0x4000 * @prog     #  16KB per PROG-ROM
+      size += 0x2000 * @char     #  8KB per CHR_ROM
+      size
+    end
+
 
     ####
     ##  Emit the header bytes, this is not exactly right, but it works for now.
@@ -108,6 +120,19 @@ module Assembler6502
     def emit_bytes
       @bytes
     end
+  end
+
+
+  ####
+  ##  This inserts ASCII text straight into the ROM
+  class ASCII
+    def initialize(string)
+      @string = string
+    end
+
+    def emit_bytes
+      @string.bytes
+    end
 
   end
 
@@ -137,6 +162,9 @@ module Assembler6502
 
       when /^\.dw\s+([A-Za-z_][A-Za-z0-9_]+)/
         DW.new($1.to_sym, address)
+
+      when /^\.ascii\s+"([^"]+)"$/
+        ASCII.new($1)
 
       when /^\.bytes\s+(.+)$/
         Bytes.new($1)

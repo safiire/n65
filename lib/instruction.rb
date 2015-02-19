@@ -16,21 +16,22 @@ module Assembler6502
     Hex8      = '\$([A-Z0-9]{2})'
     Hex16     = '\$([A-Z0-9]{4})'
     Immediate = '\#\$([0-9A-F]{2})'
-    Sym       = '([A-Za-z_][A-Za-z0-9_]+)'
+    Sym       = '([a-zZ-Z_][a-zA-Z0-9_]+)'
     Branches  = '(BPL|BMI|BVC|BVS|BCC|BCS|BNE|BEQ)'
 
     AddressingModes = {
       :relative => {
         :example     => 'B** my_label',
         :display     => '%s $%.4X',
-        :regex       => /$^/,  #  Will never match this one
+        :regex       => /$^/i,  #  Will never match this one
         :regex_label => /^#{Branches}\s+#{Sym}$/
       },
 
       :immediate => { 
         :example     => 'AAA #$FF',
         :display     => '%s #$%.2X',
-        :regex       => /^#{Mnemonic}\s+#{Immediate}$/
+        :regex       => /^#{Mnemonic}\s+#{Immediate}$/,
+        :regex_label => /^#{Mnemonic}\s+#(<|>)#{Sym}$/
       },
 
       :implied => {
@@ -93,7 +94,7 @@ module Assembler6502
       },
 
       :indirect_y => {
-        :example     => 'AAA ($FF, X)',
+        :example     => 'AAA ($FF), Y)',
         :display => '%s ($%.2X), Y',
         :regex       => /^#{Mnemonic}\s+\(#{Hex8}\)\s?,\s?Y$/,
         :regex_label => /^#{Mnemonic}\s+\(#{Sym}\)\s?,\s?Y$/
@@ -115,7 +116,6 @@ module Assembler6502
       ##  Let's see if this line is an assembler directive
       directive = Directive.parse(sanitized, address)
       return directive unless directive.nil?
-
 
       ##  Let's see if this line is a label, and try 
       ##  to create a label for the current address
@@ -143,10 +143,22 @@ module Assembler6502
 
             unless match_data.nil?
               ##  Yep, the arg is a label, we can resolve that to an address later
-              ##  Buf for now we will create an Instruction where the label is a 
+              ##  But for now we will create an Instruction where the label is a 
               ##  symbol reference to the label we found, ie. arg.to_sym
-              _, op, arg = match_data.to_a
-              return Instruction.new(op, arg.to_sym, mode, address)
+              match_array = match_data.to_a
+
+              ##  If we have a 4 element array, this means we matched something 
+              ##  like LDA #<label, which is a legal immediate one byte value
+              ##  by taking the msb.  We need to make that distinction in the
+              ##  Instruction, by passing an extra argument
+              if match_array.size == 4
+                _, op, byte_selector, arg = match_array
+                return Instruction.new(op, arg.to_sym, mode, address, byte_selector.to_sym)
+                puts "I found one with #{byte_selector} #{arg}"
+              else
+                _, op, arg = match_array
+                return Instruction.new(op, arg.to_sym, mode, address)
+              end
             end
           end
         end
@@ -161,9 +173,11 @@ module Assembler6502
     ##  Create an instruction.  Having the instruction op a downcased symbol is nice
     ##  because that can later be used to index into our opcodes hash in OpCodes
     ##  OpCodes contains the definitions of each OpCode
-    def initialize(op, arg, mode, address)
+    def initialize(op, arg, mode, address, byte_selector = nil)
 
       ##  Lookup the definition of this opcode, otherwise it is an invalid instruction
+      @byte_selector = byte_selector.nil? ? nil : byte_selector.to_sym
+      fail(InvalidInstruction, "Bad Byte selector: #{byte_selector}") unless [:>, :<, nil].include?(@byte_selector)
       @op = op.downcase.to_sym
       definition = OpCodes[@op]
       fail(InvalidInstruction, op) if definition.nil?
@@ -213,6 +227,19 @@ module Assembler6502
       if unresolved_symbols?
         if symbols[@arg].nil?
           fail(SyntaxError, "Unknown symbol #{@arg.inspect}")
+        end
+
+        ##  It is possible to resolve a symbol to a 16-bit address and then
+        ##  use byte_selector to select the msb or lsb
+        unless @byte_selector.nil?
+          arg_16 = symbols[@arg].address
+          @arg = case @byte_selector
+          when :>
+            (arg_16 & 0xFF00) >> 8
+          when :<
+            arg_16 & 0xFF
+          end
+          return @arg
         end
 
         ##  Based on this instructions length, we should resolve the address
@@ -265,6 +292,7 @@ module Assembler6502
         sprintf("%.4X | #{display}", @address, @op, @arg)
       end
     end
+
 
     private
     ####
