@@ -1,8 +1,6 @@
 # assembler6502
 
-An assembler for the 6502 microprocessor written in Ruby
-
- 6502 Assembler
+An NES assembler for the 6502 microprocessor written in Ruby
 
  Usage: ./assembler\_6502.rb <infile.asm> -o outfile.nes
 
@@ -20,20 +18,21 @@ An assembler for the 6502 microprocessor written in Ruby
   where labels were used.
 
   I have used this to compile some code for the NES, and it ran correctly
-  on FCEUX, got it to make some sounds, etc.
+  on FCEUX, got it to make some sounds, load tiles, sprites, and scrolling.
 
   Some Todos:
-  - I need to add the #\<$800 and #\>$800 style operators to select the
-    MSB and LSB of immediate values during assembly.
   - I may make this into a Rubygem
   - Maybe I can put some better error messages.
-  - I should just make a 6502 CPU emulator probably now too.
+  - Should I also make a 6502 Emulator in Ruby?
 
  Some new additions:
+  - Ported NES101 tutor to this assembler.
+  - Added msb and lsb byte selectors on address labels
   - added .org directive
   - added .dw directive
   - added .bytes directive
   - added .incbin directive
+  - added .ascii directive
   - Invented my own iNES header directive that is JSON
   - Split the project up into separate files per class
   - Wrote some more unit tests
@@ -46,7 +45,4 @@ an entire 65535 byte virtual memory images, and write the instructions to
 their correct places, and then after resolving symbols during the second pass,
 I just clip out the Cartridge ROM area and iNES header at the end, works great 
 so far.
-
-Next up I will port some more tutorials that use sprites and use controller input
-and sound all together.
 
