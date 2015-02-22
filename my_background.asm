@@ -4,7 +4,7 @@
 
   ;  Main code segment
   .org $C000 
-RESET:
+start:
   SEI          ; disable IRQs
   CLD          ; disable decimal mode
   LDX #$40
@@ -42,14 +42,14 @@ vblankwait2:      ; Second wait for vblank, PPU is ready after this
   LDA #$60        ;intensify blues
   STA $2001
 
-Forever:
-  JMP Forever     ;jump back to Forever, infinite loop
+forever:
+  JMP forever     ;jump back to Forever, infinite loop
 
-NMI:
+nmi:
   RTI
 
 
   .org $FFFA     ;first of the three vectors starts here
-  .dw NMI        ;when an NMI happens (once per frame if enabled) the processor will jump to the label NMI:
-  .dw RESET      ;when the processor first turns on or is reset, it will jump to the label RESET:
+  .dw nmi        ;when an NMI happens (once per frame if enabled) the processor will jump to the label NMI:
+  .dw start      ;when the processor first turns on or is reset, it will jump to the label RESET:
   .dw $0         ;external interrupt IRQ is not used in this tutorial
