@@ -280,7 +280,7 @@
     :boundry_add: false
 
 :cpy:
-  :description: "ComPare X register"
+  :description: "ComPare Y register"
   :flags: 
     - :s
     - :c

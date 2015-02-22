@@ -5,6 +5,9 @@ module Assembler6502
   ##  Let's simulate the entire 0xFFFF addressable memory space
   ##  In the NES, and create reading and writing methods for it.
   class MemorySpace
+    INESHeaderSize = 0x10
+    ProgROMSize = 0x4000
+    CharROMSize = 0x2000
 
     ####
     ##  Create a completely zeroed memory space
@@ -84,7 +87,6 @@ module Assembler6502
           fail(SyntaxError, "Already got ines header") unless @ines_header.nil?
           @ines_header = parsed_line
           puts "\tGot iNES Header"
-          #memory.write(0x0, parsed_line.emit_bytes)
 
         when Org
           address = parsed_line.address
@@ -99,22 +101,22 @@ module Assembler6502
             puts "\tSaving instruction with unresolved symbols #{parsed_line}, for second pass"
             unresolved_instructions << parsed_line
           else
-            puts "\tWriting instruction #{parsed_line} to memory"
+            puts "\tWriting instruction #{parsed_line}"
             memory.write(parsed_line.address, parsed_line.emit_bytes)
           end
           address += parsed_line.length
-          puts "\tAdvanced address to %X" % address
 
         when IncBin
-          fail("\tI Don't support .incbin yet")
-
+          puts "\t Including binary file #{parsed_line.filepath}"
+          memory.write(parsed_line.address, parsed_line.emit_bytes)
+          address += parsed_line.size
 
         when DW
           if parsed_line.unresolved_symbols?
-            puts "\tSaving .dw directive with unresolved symbols #{parsed_line}, for second pass"
+            puts "\tSaving #{parsed_line} directive with unresolved symbols, for second pass"
             unresolved_instructions << parsed_line
           else
-            puts "\tWriting .dw #{parsed_line.inspect} to memory"
+            puts "\tWriting #{parsed_line} to memory"
             memory.write(address, parsed_line.emit_bytes)
           end
           address += 2
@@ -136,11 +138,12 @@ module Assembler6502
         end
       end
 
-      print "Second pass: Resolving Symbols..."
+      puts "Second pass: Resolving Symbols..."
       unresolved_instructions.each do |instruction|
         if instruction.unresolved_symbols?
           instruction.resolve_symbols(labels)
         end
+        puts "\tResolved #{instruction}"
         memory.write(instruction.address, instruction.emit_bytes)
       end
       puts 'Done'
@@ -155,7 +158,7 @@ module Assembler6502
     ##  I am guessing the ROM size should be 1 bank of 16KB cartridge ROM
     ##  plus the 16 byte iNES header.  If the ROM is written into memory 
     ##  beginning at 0xC000, this should reach right up to the interrupt vectors
-    def assemble
+    def assemble_old
       virtual_memory = assemble_in_virtual_memory
 
       ##  First we need to be sure we have an iNES header
@@ -188,6 +191,58 @@ module Assembler6502
       #nes_rom.write(0x0, virtual_memory.read(0x0, 0x10))
       #nes_rom.write(0x10, virtual_memory.read(0xC000, 0x4000))
       #nes_rom.emit_bytes
+    end
+
+
+    ####
+    ##  Another try at using the header to decide which segments
+    ##  go into the final ROM image, and which order.
+    def assemble
+      virtual_memory = assemble_in_virtual_memory
+
+      ##  First we need to be sure we have an iNES header
+      fail(INESHeaderNotFound) if @ines_header.nil?
+
+      ##  Now, we should decide how big the ROM image will be.
+      ##  And reserve memory build the image in
+      nes_rom_size  = MemorySpace::INESHeaderSize
+      nes_rom_size += @ines_header.prog * MemorySpace::ProgROMSize
+      nes_rom_size += @ines_header.char * MemorySpace::CharROMSize
+      nes_rom = MemorySpace.new(nes_rom_size)
+      puts "ROM will be #{nes_rom_size} bytes"
+
+      ##  Write the ines header to the ROM
+      nes_rom.write(0x0, @ines_header.emit_bytes)
+      puts "Wrote 16 byte ines header"
+
+      ##  If prog rom is >= 1 write the 16kb chunk from 0x8000
+      if @ines_header.prog >= 1
+        nes_rom.write(0x10, virtual_memory.read(0x8000, MemorySpace::ProgROMSize))
+        puts "Wrote 16KB byte prog rom 1"
+      end
+
+      ##  If prog rom is == 2 write the 16kb chunk from 0xC000
+      if @ines_header.prog == 2
+        nes_rom.write(0x10 + 0x4000, virtual_memory.read(0xC000, MemorySpace::ProgROMSize))
+        puts "Wrote 16KB byte prog rom 2"
+      end
+      fail("Can only have 2 prog rom slots") if @ines_header.prog > 2
+
+      ##  If char rom is >= 1 write the 8kb chunk from 0x0000
+      if @ines_header.char >= 1
+        char_start = 0x10 + (@ines_header.prog * MemorySpace::ProgROMSize)
+        nes_rom.write(char_start, virtual_memory.read(0x0000, MemorySpace::CharROMSize))
+        puts "Wrote 8KB byte char rom 1"
+      end
+
+      ##  If char rom is == 2 write the 8kb chunk from 0x2000
+      if @ines_header.char >= 1
+        char_start = 0x10 + (@ines_header.prog * MemorySpace::ProgROMSize) + MemorySpace::CharROMSize
+        nes_rom.write(char_start, virtual_memory.read(0x2000, MemorySpace::CharROMSize))
+        puts "Wrote 8KB byte char rom 2"
+      end
+
+      nes_rom.emit_bytes
     end
 
   end
