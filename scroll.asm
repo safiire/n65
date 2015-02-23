@@ -7,9 +7,10 @@
 ;  I just rewrote it to have something interesting to test my assembler on.
 ;  Saf 2015
 ;
-  ;  Create an iNES header
-  .ines {"prog": 1, "char": 1, "mapper": 0, "mirror": 0}
+;  Create an iNES header
+.ines {"prog": 1, "char": 1, "mapper": 0, "mirror": 0}
 
+;  Let's use labels to point to areas of SRAM
   ;  SRAM
   ;  I have no way to do this right now, but I need to add
   ;  the ability to simply name parts of memory with a sort
@@ -189,7 +190,7 @@ update_sprite:
   lda #>sprite
   sta $4014                ; Jam page $200-$2FF into SPR-RAM
 
-  lda $05                  ;  sprite+3  Is this right???
+  lda $0203                  ;  sprite+3  Is this right???
   beq hit_left
   cmp #$F7
   bne edge_done
@@ -207,8 +208,8 @@ hit_left:
 
 edge_done:                ; update X and store it.
   clc
-  adc $00                    ;  dx
-  sta $05                 ;  sprite+3 Is this right?
+  adc $00                 ;  dx
+  sta $0203                ;  sprite+3 Is this right?
   rts
 
 react_to_input:
@@ -240,7 +241,8 @@ a_done:
   dex                
   stx sprite
 
-not_up: lda $4016                ; Down
+not_up: 
+  lda $4016                ; Down
   and #$01
   beq not_dn
   ldx sprite
@@ -271,7 +273,7 @@ scroll_screen:
   stx $02                 ; scroll
   lda #$00
   sta $2005                ; Write 0 for Horiz. Scroll value
-  STX $2005                ; Write the value of 'scroll' for Vert. Scroll value
+  stx $2005                ; Write the value of 'scroll' for Vert. Scroll value
                 
 no_scroll:
   rts
