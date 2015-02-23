@@ -93,10 +93,20 @@ module Assembler6502
       STDERR.puts "Missing options try --help"
       exit(1)
     end
-    Assembler6502::Assembler.from_file(input_file, options[:out_file])
+
+    begin
+      Assembler6502::Assembler.from_file(input_file, options[:out_file])
+    rescue StandardError => error
+      STDERR.puts("Assemble Failed!")
+      STDERR.puts(error.class)
+      if error.message
+        STDERR.puts(error.message)
+      end
+      exit(1)
+    end
   end
   module_function :run
 
 end
 
-Assembler6502.run
+  Assembler6502.run

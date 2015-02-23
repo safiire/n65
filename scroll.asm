@@ -20,6 +20,7 @@
   ;    *dx     = $00    ;  The speed delta x of the sprite
   ;    *a      = $01    ;  Whether the A button is down
   ;    *scroll = $02    ;  The scroll amount
+  ;    *dy     = $03    ;  The speed delta y of the sprite
   ;
   ;    *sprite = $200   ;  Some sprite memory
   ;  Actually I can probably do this with a .org and label pair
@@ -116,7 +117,7 @@ init_sprites:
   lda #$00
   ldx #$00
 sprite_clear1:
-  sta $0200, X             ; $0200 = sprite
+  sta sprite, x
   inx
   bne sprite_clear1
 
@@ -131,6 +132,9 @@ sprite_clear1:
   ; Set initial value of dx
   lda #$01
   sta $00                 ;  dx = $00
+  ; Set initial value of dy
+  lda #$70
+  sta $03                 ;  dy = $03
   rts
 
 ; Load palette into $3F00

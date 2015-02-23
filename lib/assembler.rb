@@ -47,6 +47,7 @@ module Assembler6502
 
     ##  Custom exceptions
     class INESHeaderNotFound < StandardError; end
+    class MapperNotSupported < StandardError; end
 
 
     ####
@@ -153,53 +154,14 @@ module Assembler6502
 
 
     ####
-    ##  After assembling the binary into the full 16-bit memory space
-    ##  we can now slice out the parts that should go into the binary ROM
-    ##  I am guessing the ROM size should be 1 bank of 16KB cartridge ROM
-    ##  plus the 16 byte iNES header.  If the ROM is written into memory 
-    ##  beginning at 0xC000, this should reach right up to the interrupt vectors
-    def assemble_old
-      virtual_memory = assemble_in_virtual_memory
-
-      ##  First we need to be sure we have an iNES header
-      fail(INESHeaderNotFound) if @ines_header.nil?
-
-      ##  Create memory to hold the ROM
-      nes_rom = MemorySpace.new(0x10 + 0x4000)
-
-      ##  First write the iNES header itself
-      nes_rom.write(0x0, @ines_header.emit_bytes)
-
-      ##  Write only one PROG section from 0xC000
-      start_address = 0xC000
-      length = 0x4000
-      prog_rom = virtual_memory.read(start_address, length)
-      write_start = 0x10
-      nes_rom.write(write_start, prog_rom)
-
-      ##  Now try writing one CHR-ROM section from 0x0000
-      start_address = 0x0000
-      length = 0x4000
-      char_rom = virtual_memory.read(start_address, length)
-      write_start = 0x10 + 0x4000
-      nes_rom.write(write_start, char_rom)
-
-      nes_rom.emit_bytes
-
-      #rom_size = 16 + (0xffff - 0xc000)
-      #nes_rom = MemorySpace.new(rom_size)
-      #nes_rom.write(0x0, virtual_memory.read(0x0, 0x10))
-      #nes_rom.write(0x10, virtual_memory.read(0xC000, 0x4000))
-      #nes_rom.emit_bytes
-    end
-
-
-    ####
     ##  New ROM assembly, this is so simplified, and needs to take banks into account
     ##  This will happen once I fully understand mappers and banks.
     def assemble
       ##  Assemble into a virtual memory space
       virtual_memory = assemble_in_virtual_memory
+
+      ##  First we need to be sure we have an iNES header
+      fail(MapperNotSupported, "Mapper #{@ines_header.mapper} not supported") if @ines_header.mapper != 0
 
       ##  First we need to be sure we have an iNES header
       fail(INESHeaderNotFound) if @ines_header.nil?
