@@ -49,12 +49,15 @@ module Assembler6502
   ####
   ##  This is to include a binary file
   class IncBin
+    attr_reader :address, :filepath
 
     class FileNotFound < StandardError; end
 
     ####
     ##  Initialize with a file path
-    def initialize(filepath)
+    def initialize(filepath, address)
+      @filepath = filepath
+      @address = address
       unless File.exists?(filepath)
         fail(FileNotFound, ".incbin can't find #{filepath}")
       end
@@ -94,6 +97,14 @@ module Assembler6502
     def resolve_symbols(labels)
       if unresolved_symbols? && labels[@value] != nil
         @value = labels[@value].address
+      end
+    end
+
+    def to_s
+      if @value.kind_of?(Symbol)
+        sprintf("$%.4X | .dw #{@value}", @address)
+      else
+        sprintf("$%.4X | .dw $%.4X", @address, @value)
       end
     end
 
@@ -155,7 +166,7 @@ module Assembler6502
         Org.new($1.to_i(16))
 
       when /^\.incbin "([^"]+)"$/
-        IncBin.new($1)
+        IncBin.new($1, address)
 
       when /^\.dw\s+\$([0-9A-F]{1,4})$/
         DW.new($1.to_i(16), address)
