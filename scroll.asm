@@ -30,282 +30,282 @@ sprite:
 .org $C000
 
 reset:  
-  SEI
-	CLD
+  sei
+	cld
 
 	; Wait two VBLANKs.
 wait_vb1:
- 	LDA $2002
-	BPL wait_vb1
+ 	lda $2002
+	bpl wait_vb1
 
 wait_vb2:
-	LDA $2002
-	BPL wait_vb2
+	lda $2002
+	bpl wait_vb2
 
 
 	; Clear out RAM.
-  LDA #$00
-  LDX #$00
+  lda #$00
+  ldx #$00
 clear_segments:
-  STA $00, X
-  STA $0100, X
-  STA $0200, X
-  STA $0300, X
-  STA $0400, X
-  STA $0500, X
-  STA $0600, X
-  STA $0700, X
-  INX
-  BNE clear_segments
+  sta $00, X
+  sta $0100, X
+  sta $0200, X
+  sta $0300, X
+  sta $0400, X
+  sta $0500, X
+  sta $0600, X
+  sta $0700, X
+  inx
+  bne clear_segments
 
 
 	; Reset the stack pointer.
-  LDX #$FF
-  TXS
+  ldx #$FF
+  txs
 
 	; Disable all graphics.
-  LDA #$00
-  STA $2000
-  STA $2001
+  lda #$00
+  sta $2000
+  sta $2001
 
-	JSR init_graphics
-	JSR init_input
-	JSR init_sound
+	jsr init_graphics
+	jsr init_input
+	jsr init_sound
 
 	; Set basic PPU registers.  Load background from $0000,
 	; sprites from $1000, and the name table from $2000.
-  LDA #$88
-  STA $2000
-  LDA #$1E
-  STA $2001
-	CLI
+  lda #$88
+  sta $2000
+  lda #$1E
+  sta $2001
+	cli
 
 
 	; Transfer control to the VBLANK routines.
 forever:   
-  JMP forever
+  jmp forever
 
 init_graphics:
-  JSR init_sprites
-  JSR load_palette
-  JSR load_name_tables
-  JSR init_scrolling
-  RTS
+  jsr init_sprites
+  jsr load_palette
+  jsr load_name_tables
+  jsr init_scrolling
+  rts
 
 init_input:
   ; The A button starts out not-pressed.
-  LDA #$00
-  STA $01    ; $01 = A button
-  RTS
+  lda #$00
+  sta $01    ; $01 = A button
+  rts
 
 init_sound:
   ; initialize sound hardware
-  LDA #$01
-  STA $4015
-  LDA #$00
-  STA $4001
-	LDA #$40
-	STA $4017
-  RTS
+  lda #$01
+  sta $4015
+  lda #$00
+  sta $4001
+	lda #$40
+	sta $4017
+  rts
 
 
 init_sprites:
 
   ; Clear page #2, which we'll use to hold sprite data
-  LDA #$00
-  LDX #$00
+  lda #$00
+  ldx #$00
 sprite_clear1:
-  STA $0200, X             ; $0200 = sprite
-  INX
-  BNE sprite_clear1
+  sta $0200, X             ; $0200 = sprite
+  inx
+  bne sprite_clear1
 
   ; initialize Sprite 0
-  LDA #$70
-  STA $0200                ; sprite Y coordinate
-  LDA #$01
-  STA $0201                ; sprite + 1Pattern number
-  STA $0203                ; sprite+3 X coordinate
+  lda #$70
+  sta $0200                ; sprite Y coordinate
+  lda #$01
+  sta $0201                ; sprite + 1Pattern number
+  sta $0203                ; sprite+3 X coordinate
                            ; sprite+2, color, stays 0.
 
   ; Set initial value of dx
-  LDA #$01
-  STA $00                 ;  dx = $00
-  RTS
+  lda #$01
+  sta $00                 ;  dx = $00
+  rts
 
 ; Load palette into $3F00
 load_palette:
-  LDA #$3F
-  LDX #$00
-  STA $2006
-  STX $2006
+  lda #$3F
+  ldx #$00
+  sta $2006
+  stx $2006
 loady_loop:
-  LDA palette, X
-  STA $2007
-  INX
-  CPX #$20
-  BNE loady_loop
-  RTS
+  lda palette, X
+  sta $2007
+  inx
+  cpx #$20
+  bne loady_loop
+  rts
 
 ; Jam some text into the first name table (at $2400, thanks to mirroring)
 load_name_tables:
-  LDY #$00
-  LDX #$04
-  LDA #<bg
-  STA $10
-  LDA #>bg
-  STA $11
-  LDA #$24
-  STA $2006
-  LDA #$00
-  STA $2006
+  ldy #$00
+  ldx #$04
+  lda #<bg
+  sta $10
+  lda #>bg
+  sta $11
+  lda #$24
+  sta $2006
+  lda #$00
+  sta $2006
 go_back:
-  LDA ($10), Y
-  STA $2007
-  INY
-  BNE go_back
-  INC $11
-  DEX
-  BNE go_back
-  RTS
+  lda ($10), Y
+  sta $2007
+  iny
+  bne go_back
+  inc $11
+  dex
+  bne go_back
+  rts
 
 ; Clear out the Name Table at $2800 (where we already are.  Yay.)
-  LDY #$00
-  LDX #$04
-  LDA #$00
+  ldy #$00
+  ldx #$04
+  lda #$00
 back:
-  STA $2007
-  INY
-  BNE back
-  DEX
-  BNE back
-  RTS
+  sta $2007
+  iny
+  bne back
+  dex
+  bne back
+  rts
 
 init_scrolling:
-  LDA #$F0
-  STA $02    ; scroll
-  RTS
+  lda #$F0
+  sta $02    ; scroll
+  rts
 
 update_sprite:
-  LDA #>sprite
-  STA $4014                ; Jam page $200-$2FF into SPR-RAM
+  lda #>sprite
+  sta $4014                ; Jam page $200-$2FF into SPR-RAM
 
-  LDA $05                  ;  sprite+3  Is this right???
-  BEQ hit_left
-  CMP #$F7
-  BNE edge_done
+  lda $05                  ;  sprite+3  Is this right???
+  beq hit_left
+  cmp #$F7
+  bne edge_done
   ; Hit right
-  LDX #$FF
-  STX $00                   ;  dx
-  JSR high_c
-  JMP edge_done
+  ldx #$FF
+  stx $00                   ;  dx
+  jsr high_c
+  jmp edge_done
 
 
 hit_left:
-  LDX #$01
-  STX $00                    ;  dx
-  JSR high_c
+  ldx #$01
+  stx $00                    ;  dx
+  jsr high_c
 
 edge_done:                ; update X and store it.
-  CLC
-  ADC $00                    ;  dx
-  STA $05                 ;  sprite+3 Is this right?
-  RTS
+  clc
+  adc $00                    ;  dx
+  sta $05                 ;  sprite+3 Is this right?
+  rts
 
 react_to_input:
-  LDA #$01                ; strobe joypad
-  STA $4016
-  LDA #$00
-  STA $4016
+  lda #$01                ; strobe joypad
+  sta $4016
+  lda #$00
+  sta $4016
 
-  LDA $4016               ; Is the A button down?
+  lda $4016               ; Is the A button down?
   AND #$01
-  BEQ not_a                
-  LDX $01                 ;  a
-  BNE a_done              ; Only react if the A button wasn't down last time.
-  STA $01                 ; Store the 1 in local variable 'a' so that we this is
-  JSR reverse_dx          ; only called once per press.
-  JMP a_done
+  beq not_a                
+  ldx $01                 ;  a
+  bne a_done              ; Only react if the A button wasn't down last time.
+  sta $01                 ; Store the 1 in local variable 'a' so that we this is
+  jsr reverse_dx          ; only called once per press.
+  jmp a_done
 not_a:  
-  STA $01                 ; A has been released, so put that zero into 'a'.
+  sta $01                 ; A has been released, so put that zero into 'a'.
 a_done: 
-  LDA $4016                ; B does nothing
-  LDA $4016                ; Select does nothing
-  LDA $4016                ; Start does nothing
-  LDA $4016                ; Up
-  AND #$01
-  BEQ not_up
-  LDX sprite                ; Load Y value
-  CPX #$07
-  BEQ not_up                ; No going past the top of the screen
-  DEX                
-  STX sprite
+  lda $4016                ; B does nothing
+  lda $4016                ; Select does nothing
+  lda $4016                ; Start does nothing
+  lda $4016                ; Up
+  and #$01
+  beq not_up
+  ldx sprite                ; Load Y value
+  cpx #$07
+  beq not_up                ; No going past the top of the screen
+  dex                
+  stx sprite
 
 not_up: lda $4016                ; Down
-  AND #$01
-  BEQ not_dn
-  LDX sprite
-  CPX #$DF                  ; No going past the bottom of the screen.
-  BEQ not_dn
-  INX
-  STX sprite
+  and #$01
+  beq not_dn
+  ldx sprite
+  cpx #$DF                  ; No going past the bottom of the screen.
+  beq not_dn
+  inx
+  stx sprite
 not_dn: 
-  RTS                                ; Ignore left and right, we don't use 'em
+  rts                                ; Ignore left and right, we don't use 'em
 
 reverse_dx:
-  LDA #$FF                
-  EOR $00          ; dx
-  CLC
-  ADC #$01
-  STA $00          ; dx
-  JSR low_c
-  RTS
+  lda #$FF                
+  eor $00          ; dx
+  clc
+  adc #$01
+  sta $00          ; dx
+  jsr low_c
+  rts
 
 scroll_screen:
-  LDX #$00                ; Reset VRAM
-  STX $2006
-  STX $2006
+  ldx #$00                ; Reset VRAM
+  stx $2006
+  stx $2006
 
-  LDX $02                 ; scroll                ; Do we need to scroll at all?
-  BEQ no_scroll
-  DEX
-  STX $02                 ; scroll
-  LDA #$00
-  STA $2005                ; Write 0 for Horiz. Scroll value
+  ldx $02                 ; scroll                ; Do we need to scroll at all?
+  beq no_scroll
+  dex
+  stx $02                 ; scroll
+  lda #$00
+  sta $2005                ; Write 0 for Horiz. Scroll value
   STX $2005                ; Write the value of 'scroll' for Vert. Scroll value
                 
 no_scroll:
-  RTS
+  rts
 
 low_c:
-  PHA
-  LDA #$84
-  STA $4000
-  LDA #$AA
-  STA $4002
-  LDA #$09
-  STA $4003
-  PLA
-  RTS
+  pha
+  lda #$84
+  sta $4000
+  lda #$AA
+  sta $4002
+  lda #$09
+  sta $4003
+  pla
+  rts
 
 high_c:
-  PHA
-  LDA #$86
-  STA $4000
-  LDA #$69
-  STA $4002
-  LDA #$08
-  STA $4003
-  PLA
-  RTS
+  pha
+  lda #$86
+  sta $4000
+  lda #$69
+  sta $4002
+  lda #$08
+  sta $4003
+  pla
+  rts
 
 
 vblank: 
-  JSR scroll_screen
-  JSR update_sprite
-  JSR react_to_input
+  jsr scroll_screen
+  jsr update_sprite
+  jsr react_to_input
 
 irq:    
-  RTI
+  rti
 
 ; palette data
 palette:

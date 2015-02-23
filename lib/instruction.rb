@@ -12,12 +12,14 @@ module Assembler6502
     class InvalidAddressingMode < StandardError; end
     class AddressOutOfRange < StandardError; end
 
-    Mnemonic  = '([A-Z]{3})'
-    Hex8      = '\$([A-Z0-9]{2})'
-    Hex16     = '\$([A-Z0-9]{4})'
+    Mnemonic  = '([A-Za-z]{3})'
+    Hex8      = '\$([A-Fa-f0-9]{2})'
+    Hex16     = '\$([A-Fa-f0-9]{4})'
     Immediate = '\#\$([0-9A-F]{2})'
     Sym       = '([a-zZ-Z_][a-zA-Z0-9_]+)'
-    Branches  = '(BPL|BMI|BVC|BVS|BCC|BCS|BNE|BEQ)'
+    Branches  = '(BPL|BMI|BVC|BVS|BCC|BCS|BNE|BEQ|bpl|bmi|bvc|bvs|bcc|bcs|bne|beq)'
+    XReg      = '[Xx]'
+    YReg      = '[Yy]'
 
     AddressingModes = {
       :relative => {
@@ -49,13 +51,13 @@ module Assembler6502
       :zero_page_x => {
         :example     => 'AAA $FF, X',
         :display     => '%s $%.2X, X',
-        :regex       => /^#{Mnemonic}\s+#{Hex8}\s?,\s?X$/
+        :regex       => /^#{Mnemonic}\s+#{Hex8}\s?,\s?#{XReg}$/
       },
 
       :zero_page_y => {
         :example     => 'AAA $FF, Y',
         :display     => '%s $%.2X, Y',
-        :regex       => /^#{Mnemonic}\s+#{Hex8}\s?,\s?Y$/
+        :regex       => /^#{Mnemonic}\s+#{Hex8}\s?,\s?#{YReg}$/
       },
 
       :absolute => {
@@ -68,15 +70,15 @@ module Assembler6502
       :absolute_x => {
         :example     => 'AAA $FFFF, X',
         :display     => '%s $%.4X, X',
-        :regex       => /^#{Mnemonic}\s+#{Hex16}\s?,\s?X$/,
-        :regex_label => /^#{Mnemonic}\s+#{Sym}\s?,\s?X$/
+        :regex       => /^#{Mnemonic}\s+#{Hex16}\s?,\s?#{XReg}$/,
+        :regex_label => /^#{Mnemonic}\s+#{Sym}\s?,\s?#{XReg}$/
       },
 
       :absolute_y => {
         :example     => 'AAA $FFFF, Y',
         :display     => '%s $%.4X, Y',
-        :regex       => /^#{Mnemonic}\s+#{Hex16}\s?,\s?Y$/,
-        :regex_label => /^#{Mnemonic}\s+#{Sym}\s?,\s?Y$/
+        :regex       => /^#{Mnemonic}\s+#{Hex16}\s?,\s?#{YReg}$/,
+        :regex_label => /^#{Mnemonic}\s+#{Sym}\s?,\s?#{YReg}$/
       },
 
       :indirect => {
@@ -89,15 +91,15 @@ module Assembler6502
       :indirect_x => {
         :example     => 'AAA ($FF, X)',
         :display     => '%s ($%.2X, X)',
-        :regex       => /^#{Mnemonic}\s+\(#{Hex8}\s?,\s?X\)$/,
-        :regex_label => /^#{Mnemonic}\s+\(#{Sym}\s?,\s?X\)$/
+        :regex       => /^#{Mnemonic}\s+\(#{Hex8}\s?,\s?#{XReg}\)$/,
+        :regex_label => /^#{Mnemonic}\s+\(#{Sym}\s?,\s?#{XReg}\)$/
       },
 
       :indirect_y => {
         :example     => 'AAA ($FF), Y)',
         :display => '%s ($%.2X), Y',
-        :regex       => /^#{Mnemonic}\s+\(#{Hex8}\)\s?,\s?Y$/,
-        :regex_label => /^#{Mnemonic}\s+\(#{Sym}\)\s?,\s?Y$/
+        :regex       => /^#{Mnemonic}\s+\(#{Hex8}\)\s?,\s?#{YReg}$/,
+        :regex_label => /^#{Mnemonic}\s+\(#{Sym}\)\s?,\s?#{YReg}$/
       }
     }
 
@@ -235,9 +237,9 @@ module Assembler6502
           arg_16 = symbols[@arg].address
           @arg = case @byte_selector
           when :>
-            (arg_16 & 0xFF00) >> 8
+            high_byte(arg_16)
           when :<
-            arg_16 & 0xFF
+            low_byte(arg_16)
           end
           return @arg
         end
@@ -299,6 +301,20 @@ module Assembler6502
     ##  Break an integer into two 8-bit parts
     def break_16(integer)
       [integer & 0x00FF, (integer & 0xFF00) >> 8]
+    end
+
+
+    ####
+    ##  Take the high byte of a 16-bit integer
+    def high_byte(word)
+      (word & 0xFF00) >> 8
+    end
+
+
+    ####
+    ##  Take the low byte of a 16-bit integer
+    def low_byte(word)
+      word & 0xFF
     end
 
   end

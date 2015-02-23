@@ -23,7 +23,6 @@ An NES assembler for the 6502 microprocessor written in Ruby
   ![Scrolling NES Demo](assembler_demo.png)
 
   Some Todos:
-  - Allow lower case mnemonics in source code
   - Understand how to deal with various mappers
   - Understand how to create multiple banks
   - Get an NSF file playing
@@ -36,8 +35,10 @@ An NES assembler for the 6502 microprocessor written in Ruby
   - Support binary literals ie %10101010
   - Anonymous Label support, (maybe, not sure if I like the idea)
   - Give this project a better name.
+  - Create an interactive read eval compile loop?
 
  Some new additions:
+  - Lower case mnemonics and hex digits
   - Ported NES101 tutor to this assembler.
   - Added msb and lsb byte selectors on address labels
   - added .org directive
