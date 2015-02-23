@@ -34,6 +34,8 @@ An NES assembler for the 6502 microprocessor written in Ruby
     the PPU and APU, (values for locations like $2000 and $2001,
     the $4000s, etc.)
   - Support binary literals ie %10101010
+  - Anonymous Label support, (maybe, not sure if I like the idea)
+  - Give this project a better name.
 
  Some new additions:
   - Ported NES101 tutor to this assembler.
