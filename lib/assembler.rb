@@ -195,38 +195,36 @@ module Assembler6502
 
 
     ####
-    ##  Another try at using the header to decide which segments
-    ##  go into the final ROM image, and which order.
-    ##  This does not work, it needs to know about banks.
-    def assemble_new_crap
-      virtual_memory = assemble_in_virtual_memory
+    ##  This is all crap, I must research how banks and mappers work
+    #def assemble_new_crap
+    #  virtual_memory = assemble_in_virtual_memory
 
-      ##  First we need to be sure we have an iNES header
-      fail(INESHeaderNotFound) if @ines_header.nil?
+    #  ##  First we need to be sure we have an iNES header
+    #  fail(INESHeaderNotFound) if @ines_header.nil?
 
-      ##  Now, we should decide how big the ROM image will be.
-      ##  And reserve memory build the image in
-      nes_rom_size  = MemorySpace::INESHeaderSize
-      nes_rom_size += @ines_header.prog * MemorySpace::ProgROMSize
-      nes_rom_size += @ines_header.char * MemorySpace::CharROMSize
-      nes_rom = MemorySpace.new(nes_rom_size)
-      puts "ROM will be #{nes_rom_size} bytes"
+    #  ##  Now, we should decide how big the ROM image will be.
+    #  ##  And reserve memory build the image in
+    #  nes_rom_size  = MemorySpace::INESHeaderSize
+    #  nes_rom_size += @ines_header.prog * MemorySpace::ProgROMSize
+    #  nes_rom_size += @ines_header.char * MemorySpace::CharROMSize
+    #  nes_rom = MemorySpace.new(nes_rom_size)
+    #  puts "ROM will be #{nes_rom_size} bytes"
 
-      ##  Write the ines header to the ROM
-      nes_rom.write(0x0, @ines_header.emit_bytes)
-      puts "Wrote 16 byte ines header"
+    #  ##  Write the ines header to the ROM
+    #  nes_rom.write(0x0, @ines_header.emit_bytes)
+    #  puts "Wrote 16 byte ines header"
 
-      ##  If prog rom is >= 1 write the 16kb chunk from 0x8000
-      if @ines_header.prog >= 1
-        nes_rom.write(0x10, virtual_memory.read(0x8000, MemorySpace::ProgROMSize))
-        puts "Wrote 16KB byte prog rom 1"
-      end
+    #  ##  If prog rom is >= 1 write the 16kb chunk from 0x8000
+    #  if @ines_header.prog >= 1
+    #    nes_rom.write(0x10, virtual_memory.read(0x8000, MemorySpace::ProgROMSize))
+    #    puts "Wrote 16KB byte prog rom 1"
+    #  end
 
-      ##  If prog rom is == 2 write the 16kb chunk from 0xC000
-      #if @ines_header.prog == 2
-        #nes_rom.write(0x10 + 0x4000, virtual_memory.read(0xC000, MemorySpace::ProgROMSize))
-        #puts "Wrote 16KB byte prog rom 2"
-      #end
+    #  ##  If prog rom is == 2 write the 16kb chunk from 0xC000
+    #  #if @ines_header.prog == 2
+    #    #nes_rom.write(0x10 + 0x4000, virtual_memory.read(0xC000, MemorySpace::ProgROMSize))
+    #    #puts "Wrote 16KB byte prog rom 2"
+    #  #end
       #fail("Can only have 2 prog rom slots") if @ines_header.prog > 2
 
       ##  If char rom is >= 1 write the 8kb chunk from 0x0000
@@ -243,8 +241,8 @@ module Assembler6502
         #puts "Wrote 8KB byte char rom 2"
       #end
 
-      nes_rom.emit_bytes
-    end
+      #nes_rom.emit_bytes
+    #end
 
   end
 
