@@ -158,7 +158,7 @@ module Assembler6502
     ##  I am guessing the ROM size should be 1 bank of 16KB cartridge ROM
     ##  plus the 16 byte iNES header.  If the ROM is written into memory 
     ##  beginning at 0xC000, this should reach right up to the interrupt vectors
-    def assemble
+    def assemble_old
       virtual_memory = assemble_in_virtual_memory
 
       ##  First we need to be sure we have an iNES header
@@ -195,54 +195,53 @@ module Assembler6502
 
 
     ####
-    ##  This is all crap, I must research how banks and mappers work
-    #def assemble_new_crap
-    #  virtual_memory = assemble_in_virtual_memory
+    ##  New ROM assembly, this is so simplified, and needs to take banks into account
+    ##  This will happen once I fully understand mappers and banks.
+    def assemble
+      ##  Assemble into a virtual memory space
+      virtual_memory = assemble_in_virtual_memory
 
-    #  ##  First we need to be sure we have an iNES header
-    #  fail(INESHeaderNotFound) if @ines_header.nil?
+      ##  First we need to be sure we have an iNES header
+      fail(INESHeaderNotFound) if @ines_header.nil?
 
-    #  ##  Now, we should decide how big the ROM image will be.
-    #  ##  And reserve memory build the image in
-    #  nes_rom_size  = MemorySpace::INESHeaderSize
-    #  nes_rom_size += @ines_header.prog * MemorySpace::ProgROMSize
-    #  nes_rom_size += @ines_header.char * MemorySpace::CharROMSize
-    #  nes_rom = MemorySpace.new(nes_rom_size)
-    #  puts "ROM will be #{nes_rom_size} bytes"
+      ##  Now we want to create a ROM layout for PROG
+      ##  This is simplified and only holds max two PROG entries
+      prog_rom = MemorySpace.new(@ines_header.prog * MemorySpace::ProgROMSize)
+      case @ines_header.prog
+      when 0
+        fail("You must have at least one PROG section")
+        exit(1)
+      when 1
+        prog_rom.write(0x0, virtual_memory.read(0xc000, MemorySpace::ProgROMSize))
+      when 2
+        prog_rom.write(0x0, virtual_memory.read(0x8000, MemorySpace::ProgROMSize))
+        prog_rom.write(MemorySpace::ProgROMSize, virtual_memory.read(0xC000, MemorySpace::ProgROMSize))
+      else
+        fail("I can't support more than 2 PROG sections")
+        exit(1)
+      end
 
-    #  ##  Write the ines header to the ROM
-    #  nes_rom.write(0x0, @ines_header.emit_bytes)
-    #  puts "Wrote 16 byte ines header"
+      ##  Now we want to create a ROM layout for CHAR
+      ##  This is simplified and only holds max two CHAR entries
+      char_rom = MemorySpace.new(@ines_header.char * MemorySpace::CharROMSize)
+      case @ines_header.char
+      when 0
+      when 1
+        char_rom.write(0x0, virtual_memory.read(0x0000, MemorySpace::CharROMSize))
+      when 2
+        char_rom.write(0x0, virtual_memory.read(0x0000, MemorySpace::CharROMSize))
+        char_rom.write(MemorySpace::CharROMSize, virtual_memory.read(0x2000, MemorySpace::CharROMSize))
+      else
+        fail("I can't support more than 2 CHAR sections")
+        exit(1)
+      end
 
-    #  ##  If prog rom is >= 1 write the 16kb chunk from 0x8000
-    #  if @ines_header.prog >= 1
-    #    nes_rom.write(0x10, virtual_memory.read(0x8000, MemorySpace::ProgROMSize))
-    #    puts "Wrote 16KB byte prog rom 1"
-    #  end
-
-    #  ##  If prog rom is == 2 write the 16kb chunk from 0xC000
-    #  #if @ines_header.prog == 2
-    #    #nes_rom.write(0x10 + 0x4000, virtual_memory.read(0xC000, MemorySpace::ProgROMSize))
-    #    #puts "Wrote 16KB byte prog rom 2"
-    #  #end
-      #fail("Can only have 2 prog rom slots") if @ines_header.prog > 2
-
-      ##  If char rom is >= 1 write the 8kb chunk from 0x0000
-      #if @ines_header.char >= 1
-        #char_start = 0x10 + (@ines_header.prog * MemorySpace::ProgROMSize)
-        #nes_rom.write(char_start, virtual_memory.read(0x0000, MemorySpace::CharROMSize))
-        #puts "Wrote 8KB byte char rom 1"
-      #end
-
-      ##  If char rom is == 2 write the 8kb chunk from 0x2000
-      #if @ines_header.char == 2
-        #char_start = 0x10 + (@ines_header.prog * MemorySpace::ProgROMSize) + MemorySpace::CharROMSize
-        #nes_rom.write(char_start, virtual_memory.read(0x2000, MemorySpace::CharROMSize))
-        #puts "Wrote 8KB byte char rom 2"
-      #end
-
-      #nes_rom.emit_bytes
-    #end
+      if @ines_header.char.zero?
+        @ines_header.emit_bytes + prog_rom.emit_bytes
+      else
+        @ines_header.emit_bytes + prog_rom.emit_bytes + char_rom.emit_bytes
+      end
+    end
 
   end
 
