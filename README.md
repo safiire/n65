@@ -30,6 +30,9 @@ An NES assembler for the 6502 microprocessor written in Ruby
   - More unit tests for each instruction
   - I may make this into a Rubygem
   - Maybe I can put some better error messages.
+  - I would like to add some Macros to generate settings for
+    the PPU and APU, (values for locations like $2000 and $2001,
+    the $4000s, etc.)
 
  Some new additions:
   - Ported NES101 tutor to this assembler.
