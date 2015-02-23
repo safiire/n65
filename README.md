@@ -1,4 +1,4 @@
-# assembler6502
+# assembler6502 0.3
 
 An NES assembler for the 6502 microprocessor written in Ruby
 
@@ -9,9 +9,9 @@ An NES assembler for the 6502 microprocessor written in Ruby
   It is good at knowing which addressing modes are and are not allowed for 
   each instruction, and contains some examples of correct syntax.
 
-  Parsing is done by Regular Expression, because, well the language is
-  so regular, it actually took less time than anything else I've tried
-  to parse in the past, including Scheme using parsec.
+  This assembler does not understand banks or mappers yet, and so having
+  more than one PROG section does not quite work yet.  That is next
+  in line to be fixed.
   
   It handles labels, and does a two pass assembly, first assembling
   the byte codes, and then going back and filling in the proper addresses
@@ -23,9 +23,13 @@ An NES assembler for the 6502 microprocessor written in Ruby
   ![Scrolling NES Demo](assembler_demo.png)
 
   Some Todos:
+  - Allow lower case mnemonics in source code
+  - Understand how to deal with various mappers
+  - Understand how to create multiple banks
+  - Get an NSF file playing
+  - More unit tests for each instruction
   - I may make this into a Rubygem
   - Maybe I can put some better error messages.
-  - Should I also make a 6502 Emulator in Ruby?
 
  Some new additions:
   - Ported NES101 tutor to this assembler.
@@ -46,5 +50,8 @@ I decided that during the first pass of assembly, I should just initialize
 an entire 65535 byte virtual memory images, and write the instructions to
 their correct places, and then after resolving symbols during the second pass,
 I just clip out the Cartridge ROM area and iNES header at the end, works great 
-so far.
+so far.  Now that I know I will need to support various mappers, I still may 
+use this method, but will need to create multiple 65535 memory segments and use
+banking to distinguish them before finally writing out the resulting ROM in
+the correct order.
 
