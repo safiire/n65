@@ -2,7 +2,8 @@ gem 'minitest'
 require 'minitest/autorun'
 require 'minitest/unit'
 
-require_relative '../assembler_6502.rb'
+require_relative '../lib/assembler.rb'
+
 
 class TestAssembler < MiniTest::Test
 
@@ -74,7 +75,7 @@ class TestAssembler < MiniTest::Test
     ASM
     assembler = Assembler6502::Assembler.new(asm)
     correct = %w{0a 06 ff 16 ff 0e ff ff 1e ff ff 0e 01 06 1e 01 06}
-    assert_equal(correct, assembler.hexdump)
+    assert_equal(correct, assembler.assemble)
   end
 
 
@@ -87,7 +88,7 @@ class TestAssembler < MiniTest::Test
     ASM
     assembler = Assembler6502::Assembler.new(asm)
     correct = %w{24 ff 2c ff ff 2c 02 06}
-    assert_equal(correct, assembler.hexdump)
+    assert_equal(correct, assembler.assemble)
   end
 
 
@@ -111,7 +112,7 @@ class TestAssembler < MiniTest::Test
     ASM
     assembler = Assembler6502::Assembler.new(asm)
     correct = %w{a2 08 ca 8e 00 02 e0 03 d0 f8 8e 01 02 10 f3 30 f1 50 ef 70 ed 90 eb b0 e9 f0 e7 00}
-    assert_equal(correct, assembler.hexdump)
+    assert_equal(correct, assembler.assemble)
   end
 
 
@@ -127,13 +128,8 @@ class TestAssembler < MiniTest::Test
     ASM
     assembler = Assembler6502::Assembler.new(asm)
     correct = %w{9a ba 48 68 08 28 ea}
-    assert_equal(correct, assembler.hexdump)
+    assert_equal(correct, assembler.assemble)
   end
-
-
-
-
-
 
 end
 
