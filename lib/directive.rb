@@ -144,7 +144,6 @@ module Assembler6502
     def emit_bytes
       @string.bytes
     end
-
   end
 
 
