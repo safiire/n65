@@ -1,67 +1,62 @@
 ;------------------------------------------------------------------------------
 ;  This is a direct port of Michael Martin's tutorial project for NES101
-;
-;  I believe that tutorial can be found here:
+;  With some modifications to the tile map, and extra comments, and ported to
+;  suit my assembler. - Saf
+;  See:
 ;  http://hackipedia.org/Platform/Nintendo/NES/tutorial,%20NES%20programming%20101/NES101.html
 ;
-;  I just rewrote it to have something interesting to test my assembler on.
-;  Saf 2015
-;
+;;;;
 ;  Create an iNES header
 .ines {"prog": 1, "char": 1, "mapper": 0, "mirror": 0}
 
-;  Let's use labels to point to areas of SRAM
-  ;  SRAM
-  ;  I have no way to do this right now, but I need to add
-  ;  the ability to simply name parts of memory with a sort
-  ;  of alias, specifically in the zero page where memory 
-  ;  access is quick.
-  ;  For now, let's just remember that in the zero page:
-  ;    *dx     = $00    ;  The speed delta x of the sprite
-  ;    *a      = $01    ;  Whether the A button is down
-  ;    *scroll = $02    ;  The scroll amount
-  ;    *dy     = $03    ;  The speed delta y of the sprite
-  ;
-  ;    *sprite = $200   ;  Some sprite memory
-  ;  Actually I can probably do this with a .org and label pair
+;;;;
+;  Here is a good spot to associate zero page memory addresses
+;  with quick access variables in the program.
 
 .org $0200
 sprite:
 
-  ;  Main Code Segment
-.org $C000
 
-reset:  
+;;;;
+;  Setup the interrupt vectors
+.org $FFFA
+.dw vblank
+.dw main
+.dw irq
+
+
+.org $C000
+;;;;
+;  Here is our code entry point, which we'll call main.
+main:
+  ;  Disable interrupts and decimal flag
   sei
 	cld
 
-	; Wait two VBLANKs.
-wait_vb1:
- 	lda $2002
-	bpl wait_vb1
+  ;  Wait for 2 vblanks
+  wait_vb1:
+    lda $2002
+    bpl wait_vb1
+  wait_vb2:
+    lda $2002
+    bpl wait_vb2
 
-wait_vb2:
-	lda $2002
-	bpl wait_vb2
-
-
-	; Clear out RAM.
+  ;  Now we want to initialize the hardware to a known state
   lda #$00
   ldx #$00
-clear_segments:
-  sta $00, X
-  sta $0100, X
-  sta $0200, X
-  sta $0300, X
-  sta $0400, X
-  sta $0500, X
-  sta $0600, X
-  sta $0700, X
-  inx
-  bne clear_segments
+  clear_segments:
+    sta $00, X
+    sta $0100, X
+    sta $0200, X
+    sta $0300, X
+    sta $0400, X
+    sta $0500, X
+    sta $0600, X
+    sta $0700, X
+    inx
+    bne clear_segments
 
-
-	; Reset the stack pointer.
+  ;  Reset the stack pointer
   ldx #$FF
   txs
 
@@ -73,20 +68,27 @@ clear_segments:
 	jsr init_graphics
 	jsr init_input
 	jsr init_sound
+  jsr init_ppu
 
-	; Set basic PPU registers.  Load background from $0000,
-	; sprites from $1000, and the name table from $2000.
+  ;  Resume interrupts and loop here forever
+	cli
+  forever:
+    jmp forever
+
+
+;;;;
+; Set basic PPU registers.  Load background from $0000,
+; sprites from $1000, and the name table from $2000.
+init_ppu:
   lda #$88
   sta $2000
   lda #$1E
   sta $2001
-	cli
+  rts
 
 
-	; Transfer control to the VBLANK routines.
-forever:   
-  jmp forever
-
+;;;;
+;  Initialize all the sprites, palettes, nametables, and scrolling
 init_graphics:
   jsr init_sprites
   jsr load_palette
@@ -94,12 +96,16 @@ init_graphics:
   jsr init_scrolling
   rts
 
+
+;;;;
+;  Initialize the controller input, keeping track of the A button
 init_input:
-  ; The A button starts out not-pressed.
   lda #$00
   sta $01    ; $01 = A button
   rts
 
+;;;;
+;  Initialize the APU to known values
 init_sound:
   ; initialize sound hardware
   lda #$01
@@ -111,47 +117,48 @@ init_sound:
   rts
 
 
+;;;;
+;  Clear page #2, which we'll use to hold sprite data
+;  This subroutine clearlys hows why I need to have symbols
+;  to refer to bits of RAM in the zero page like dx, etc.
 init_sprites:
-
-  ; Clear page #2, which we'll use to hold sprite data
   lda #$00
   ldx #$00
-sprite_clear1:
-  sta sprite, x
-  inx
-  bne sprite_clear1
+  sprite_clear1:
+    sta sprite, x
+    inx
+    bne sprite_clear1
 
   ; initialize Sprite 0
   lda #$70
   sta $0200                ; sprite Y coordinate
   lda #$01
   sta $0201                ; sprite + 1Pattern number
-  sta $0203                ; sprite+3 X coordinate
-                           ; sprite+2, color, stays 0.
+  sta $0203                ; sprite+3 X coordinate sprite+2, color, stays 0.
 
   ; Set initial value of dx
   lda #$01
   sta $00                 ;  dx = $00
-  ; Set initial value of dy
-  lda #$70
-  sta $03                 ;  dy = $03
   rts
 
-; Load palette into $3F00
+;;;;
+;  Load palette into $3F00
 load_palette:
   lda #$3F
   ldx #$00
   sta $2006
   stx $2006
-loady_loop:
-  lda palette, X
-  sta $2007
-  inx
-  cpx #$20
-  bne loady_loop
+  loady_loop:
+    lda palette, X
+    sta $2007
+    inx
+    cpx #$20
+    bne loady_loop
   rts
 
-; Jam some text into the first name table (at $2400, thanks to mirroring)
+;;;;
+; Put the ASCII values from bg into the first name table, at $2400
+; The tile values are conveniently mapped to their ASCII values
 load_name_tables:
   ldy #$00
   ldx #$04
@@ -163,38 +170,44 @@ load_name_tables:
   sta $2006
   lda #$00
   sta $2006
-go_back:
-  lda ($10), Y
-  sta $2007
-  iny
-  bne go_back
-  inc $11
-  dex
-  bne go_back
-  rts
-
-; Clear out the Name Table at $2800 (where we already are.  Yay.)
+  go_back:
+    lda ($10), Y
+    sta $2007
+    iny
+    bne go_back
+    inc $11
+    dex
+    bne go_back
+  ;  This now clears the second name table?
+  ;  I think this is because writing to $2007 auto increments the
+  ;  written value
   ldy #$00
   ldx #$04
   lda #$00
-back:
-  sta $2007
-  iny
-  bne back
-  dex
-  bne back
+  back:
+    sta $2007
+    iny
+    bne back
+    dex
+    bne back
   rts
 
+
+;;;;
+;  This initializes the scrolling storing the scroll
+;  value in the zero page variable $02
 init_scrolling:
   lda #$F0
-  sta $02    ; scroll
+  sta $02
   rts
 
+
+;;;;
+;  Update the sprite, I don't exactly understand this yet.
 update_sprite:
   lda #>sprite
   sta $4014                ; Jam page $200-$2FF into SPR-RAM
-
-  lda $0203                  ;  sprite+3  Is this right???
+  lda $0203                ;  sprite+3  Is this right???
   beq hit_left
   cmp #$F7
   bne edge_done
@@ -282,6 +295,8 @@ scroll_screen:
 no_scroll:
   rts
 
+;;;;
+;  I am pretty sure this plays a low C note on the Square wave
 low_c:
   pha
   lda #$84
@@ -293,6 +308,8 @@ low_c:
   pla
   rts
 
+;;;;
+;  I am pretty sure this plays a high C note on the Square wave
 high_c:
   pha
   lda #$86
@@ -304,22 +321,30 @@ high_c:
   pla
   rts
 
-
+;;;;
+;  Update everything on every vblank
 vblank: 
   jsr scroll_screen
   jsr update_sprite
   jsr react_to_input
+  rti
 
+
+;;;;
+;  Don't do anything on IRQ
 irq:    
   rti
 
-; palette data
+
+;;;;
+; Palette data stored in the PROG section, to be copied later
 palette:
 .bytes $0E,$00,$0E,$19,$00,$00,$00,$00,$00,$00,$00,$00,$01,$00,$01,$21
 .bytes $0E,$20,$22,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 
 
-; Background data
+;;;;
+; Background data stored in the PROG section to be copied later
 bg:
 .ascii "                                "
 .ascii "                                "
@@ -352,7 +377,9 @@ bg:
 .ascii "                                "
 .ascii "                                "
 
-; Attribute table
+
+;;;;
+; Attribute table, this is basically the tilemap
 .bytes $00,$00,$00,$00,$00,$00,$00,$00,
 .bytes $00,$00,$FF,$FF,$FF,$00,$00,$00,
 .bytes $00,$00,$FF,$FF,$FF,$00,$00,$00,
@@ -363,17 +390,11 @@ bg:
 .bytes $00,$00,$00,$00,$00,$00,$00,$00,
 
 
-;  Setup the interrupt vectors
-.org $FFFA     ;first of the three vectors starts here
-.dw vblank     ;when an NMI happens (once per frame if enabled) the processor will jump to the label NMI:
-.dw reset      ;when the processor first turns on or is reset, it will jump to the label RESET:
-.dw irq        ;external interrupt IRQ is not used in this tutorial
 
-
-
-;  This is CHR-ROM page 1, which starts at 0x0000, but I'm skipping the first bit
-;  So this is where tile memory is going to go, this is the commodore 64's character ROM
-;  mapped to ASCII for tile numbers.  We are only using 4KB of this 8KB page.
+;;;;
+;  This is CHR-ROM page 1, which starts at 0x0000, but I'm skipping the first bit because
+;  the first bunch of ASCII characters are not represented. This is the commodore 64's 
+;  character ROM.  
 .org $0200
 
 .bytes $00,$00,$00,$00,$00,$00,$00,$00,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF ; Character 32
@@ -442,7 +463,8 @@ bg:
 .bytes $00,$10,$30,$7F,$7F,$30,$10,$00,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF ; Character 95
 
 
-;  This is CHR-ROM page 2, which starts at 0x2000, and we put the sprite data here.
+;;;;
+;  Here is sprite data on CHAR ROM page 2
 .org $1000
 
 .bytes $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; Character 0: Blank
