@@ -31,7 +31,7 @@ sprite:
 main:
   ;  Disable interrupts and decimal flag
   sei
-	cld
+  cld
 
   ;  Wait for 2 vblanks
   wait_vb1:
@@ -60,18 +60,18 @@ main:
   ldx #$FF
   txs
 
-	; Disable all graphics.
+  ;  Disable all graphics.
   lda #$00
   sta $2000
   sta $2001
 
-	jsr init_graphics
-	jsr init_input
-	jsr init_sound
+  jsr init_graphics
+  jsr init_input
+  jsr init_sound
   jsr init_ppu
 
   ;  Resume interrupts and loop here forever
-	cli
+  cli
   forever:
     jmp forever
 
@@ -112,8 +112,8 @@ init_sound:
   sta $4015
   lda #$00
   sta $4001
-	lda #$40
-	sta $4017
+  lda #$40
+  sta $4017
   rts
 
 
@@ -237,7 +237,7 @@ react_to_input:
 
   lda $4016               ; Is the A button down?
   AND #$01
-  beq not_a                
+  beq not_a
   ldx $01                 ;  a
   bne a_done              ; Only react if the A button wasn't down last time.
   sta $01                 ; Store the 1 in local variable 'a' so that we this is
@@ -255,7 +255,7 @@ a_done:
   ldx sprite                ; Load Y value
   cpx #$07
   beq not_up                ; No going past the top of the screen
-  dex                
+  dex
   stx sprite
 
 not_up: 
@@ -271,7 +271,7 @@ not_dn:
   rts                                ; Ignore left and right, we don't use 'em
 
 reverse_dx:
-  lda #$FF                
+  lda #$FF
   eor $00          ; dx
   clc
   adc #$01
@@ -291,7 +291,7 @@ scroll_screen:
   lda #$00
   sta $2005                ; Write 0 for Horiz. Scroll value
   stx $2005                ; Write the value of 'scroll' for Vert. Scroll value
-                
+
 no_scroll:
   rts
 

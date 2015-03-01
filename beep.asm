@@ -6,7 +6,7 @@
 start:
   LDA #$01	; square 1
   STA $4015
-  LDA #$08	; period low
+  LDA #$F8	; period low
   STA $4002
   LDA #$02	; period high
   STA $4003
