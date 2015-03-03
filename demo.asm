@@ -119,7 +119,7 @@ init_sound:
 
 ;;;;
 ;  Clear page #2, which we'll use to hold sprite data
-;  This subroutine clearlys hows why I need to have symbols
+;  This subroutine clearly shows why I need to have symbols
 ;  to refer to bits of RAM in the zero page like dx, etc.
 init_sprites:
   lda #$00
@@ -133,8 +133,8 @@ init_sprites:
   lda #$70
   sta $0200                ; sprite Y coordinate
   lda #$01
-  sta $0201                ; sprite + 1Pattern number
-  sta $0203                ; sprite+3 X coordinate sprite+2, color, stays 0.
+  sta $0201                ; sprite + 1 Pattern number
+  sta $0203                ; sprite + 3 X coordinate, sprite + 2, color, stays 0.
 
   ; Set initial value of dx
   lda #$01
@@ -243,38 +243,38 @@ react_to_input:
   sta $01                 ; Store the 1 in local variable 'a' so that we this is
   jsr reverse_dx          ; only called once per press.
   jmp a_done
-not_a:  
-  sta $01                 ; A has been released, so put that zero into 'a'.
-a_done: 
-  lda $4016                ; B does nothing
-  lda $4016                ; Select does nothing
-  lda $4016                ; Start does nothing
-  lda $4016                ; Up
-  and #$01
-  beq not_up
-  ldx sprite                ; Load Y value
-  cpx #$07
-  beq not_up                ; No going past the top of the screen
-  dex
-  stx sprite
+  not_a:  
+    sta $01                 ; A has been released, so put that zero into 'a'.
+  a_done: 
+    lda $4016                ; B does nothing
+    lda $4016                ; Select does nothing
+    lda $4016                ; Start does nothing
+    lda $4016                ; Up
+    and #$01
+    beq not_up
+    ldx sprite                ; Load Y value
+    cpx #$07
+    beq not_up                ; No going past the top of the screen
+    dex
+    stx sprite
 
-not_up: 
-  lda $4016                ; Down
-  and #$01
-  beq not_dn
-  ldx sprite
-  cpx #$DF                  ; No going past the bottom of the screen.
-  beq not_dn
-  inx
-  stx sprite
-not_dn: 
+  not_up: 
+    lda $4016                ; Down
+    and #$01
+    beq not_dn
+    ldx sprite
+    cpx #$DF                  ; No going past the bottom of the screen.
+    beq not_dn
+    inx
+    stx sprite
+  not_dn: 
   rts                                ; Ignore left and right, we don't use 'em
 
 reverse_dx:
   lda #$FF
-  eor $00          ; dx
+  eor $00          ; dx  Toggles between 0x1 and 0xfe (-1)
   clc
-  adc #$01
+  adc #$01         ; add dx, and store to variable
   sta $00          ; dx
   jsr low_c
   rts
