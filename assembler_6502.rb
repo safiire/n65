@@ -4,10 +4,8 @@
 ##
 ##  Usage: ./assembler_6502.rb <infile.asm>
 ##
-##  This the front end of the Assembler, just processes commandline arguments
-##  and passes them to the actual assembler.
+##  This file runs the assembler though the commandline frontend.
 
-require_relative 'lib/assembler'
 require_relative 'lib/front_end'
 
 Assembler6502::FrontEnd.new(ARGV).run

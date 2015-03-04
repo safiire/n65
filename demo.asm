@@ -12,7 +12,7 @@
 ;;;;
 ;  Here is a good spot to associate zero page memory addresses
 ;  with quick access variables in the program.
-
+.segment prog 0
 .org $0200
 sprite:
 
@@ -395,6 +395,7 @@ bg:
 ;  This is CHR-ROM page 1, which starts at 0x0000, but I'm skipping the first bit because
 ;  the first bunch of ASCII characters are not represented. This is the commodore 64's 
 ;  character ROM.  
+.segment char 0
 .org $0200
 
 .bytes $00,$00,$00,$00,$00,$00,$00,$00,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF ; Character 32

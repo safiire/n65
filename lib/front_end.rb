@@ -1,4 +1,5 @@
 require 'optparse'
+require_relative 'assembler'
 
 module Assembler6502
 
@@ -53,16 +54,16 @@ module Assembler6502
         exit(1)
       end
 
-      begin
+      #begin
         Assembler6502::Assembler.from_file(input_file, @options[:output_file])
-      rescue StandardError => error
-        STDERR.puts("Assemble Failed!")
-        STDERR.puts(error.class)
-        if error.message
-          STDERR.puts(error.message)
-        end
-        exit(1)
-      end
+      #rescue StandardError => error
+        #STDERR.puts("Assemble Failed!")
+        #STDERR.puts(error.class)
+        #if error.message
+          #STDERR.puts(error.message)
+        #end
+        #exit(1)
+      #end
     end
 
     private

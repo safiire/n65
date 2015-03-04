@@ -5,7 +5,7 @@ require 'minitest/unit'
 require_relative '../lib/symbol_table.rb'
 
 
-class TestAssembler < MiniTest::Test
+class TestSymbolTable < MiniTest::Test
   include Assembler6502
 
   ####

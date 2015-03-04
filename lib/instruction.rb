@@ -1,3 +1,4 @@
+require_relative 'opcodes'
 
 module Assembler6502
 
@@ -16,7 +17,7 @@ module Assembler6502
     Hex8      = '\$([A-Fa-f0-9]{2})'
     Hex16     = '\$([A-Fa-f0-9]{4})'
     Immediate = '\#\$([0-9A-F]{2})'
-    Sym       = '([a-zZ-Z_][a-zA-Z0-9_]+)'
+    Sym       = '([a-zZ-Z_][a-zA-Z0-9_\.]+)'
     Branches  = '(BPL|BMI|BVC|BVS|BCC|BCS|BNE|BEQ|bpl|bmi|bvc|bvs|bcc|bcs|bne|beq)'
     XReg      = '[Xx]'
     YReg      = '[Yy]'
@@ -105,48 +106,34 @@ module Assembler6502
 
     ####
     ##  Parse one line of assembly, returns nil if the line
-    ##  is ultimately empty of instructions or labels
+    ##  is ultimately empty of asm instructions
     ##  Raises SyntaxError if the line is malformed in some way
-    def self.parse(asm_line, address)
+    def self.parse(line)
 
-      ##  First, sanitize the line, which removes whitespace, and comments.
-      sanitized = Assembler6502.sanitize_line(asm_line)
-
-      ##  Empty lines assemble to nothing
-      return nil if sanitized.empty?
-
-      ##  Let's see if this line is an assembler directive
-      directive = Directive.parse(sanitized, address)
-      return directive unless directive.nil?
-
-      ##  Let's see if this line is a label, and try 
-      ##  to create a label for the current address
-      label = Label.parse_label(sanitized, address)
-      return label unless label.nil?
-
-      ##  We must have some asm, so try to parse it in each addressing mode
+      ##  Try to parse this line in each addressing mode
       AddressingModes.each do |mode, parse_info|
 
         ##  We have regexes that match each addressing mode
-        match_data = parse_info[:regex].match(sanitized)
+        match_data = parse_info[:regex].match(line)
 
         unless match_data.nil?
-          ##  We must have a straight instruction without labels, construct 
+          ##  We must have a straight instruction without symbols, construct 
           ##  an Instruction from the match_data, and return it
           _, op, arg = match_data.to_a
-          return Instruction.new(op, arg, mode, address)
+          arg = arg.to_i(16) unless arg.nil?
+          return Instruction.new(op, arg, mode)
 
         else
           ##  Can this addressing mode even use labels?
           unless parse_info[:regex_label].nil?
 
-            ##  See if it does in fact have a label/symbolic argument
-            match_data = parse_info[:regex_label].match(sanitized)
+            ##  See if it does in fact have a symbolic argument
+            match_data = parse_info[:regex_label].match(line)
 
             unless match_data.nil?
-              ##  Yep, the arg is a label, we can resolve that to an address later
-              ##  But for now we will create an Instruction where the label is a 
-              ##  symbol reference to the label we found, ie. arg.to_sym
+              ##  We have found an assembly instruction containing a symbolic 
+              ##  argument.  We can resolve this symbol later by looking at the
+              ##  symbol table in the #exec method
               match_array = match_data.to_a
 
               ##  If we have a 4 element array, this means we matched something 
@@ -155,11 +142,11 @@ module Assembler6502
               ##  Instruction, by passing an extra argument
               if match_array.size == 4
                 _, op, byte_selector, arg = match_array
-                return Instruction.new(op, arg.to_sym, mode, address, byte_selector.to_sym)
+                return Instruction.new(op, arg, mode, byte_selector.to_sym)
                 puts "I found one with #{byte_selector} #{arg}"
               else
                 _, op, arg = match_array
-                return Instruction.new(op, arg.to_sym, mode, address)
+                return Instruction.new(op, arg, mode)
               end
             end
           end
@@ -167,7 +154,7 @@ module Assembler6502
       end
 
       ##  We just don't recognize this line of asm, it must be a Syntax Error
-      fail(SyntaxError, sprintf("%.4X: ", address) +  asm_line)
+      fail(SyntaxError, line)
     end
 
 
@@ -175,56 +162,105 @@ module Assembler6502
     ##  Create an instruction.  Having the instruction op a downcased symbol is nice
     ##  because that can later be used to index into our opcodes hash in OpCodes
     ##  OpCodes contains the definitions of each OpCode
-    def initialize(op, arg, mode, address, byte_selector = nil)
+    def initialize(op, arg, mode, byte_selector = nil)
 
       ##  Lookup the definition of this opcode, otherwise it is an invalid instruction
       @byte_selector = byte_selector.nil? ? nil : byte_selector.to_sym
       fail(InvalidInstruction, "Bad Byte selector: #{byte_selector}") unless [:>, :<, nil].include?(@byte_selector)
+
       @op = op.downcase.to_sym
       definition = OpCodes[@op]
       fail(InvalidInstruction, op) if definition.nil?
+
+      @arg = arg
 
       ##  Be sure the mode is an actually supported mode.
       @mode = mode.to_sym
       fail(InvalidAddressingMode, mode) unless AddressingModes.has_key?(@mode)
 
-      ##  Make sure the address is in range 
-      if address < 0x0 || address > 0xFFFF
-        fail(AddressOutOfRange, address)
-      end
-      @address = address
-
-      ##  Argument can either be a symbolic label, a hexidecimal number, or nil.
-      @arg = case arg
-      when Symbol then arg  
-      when String
-        if arg.match(/[0-9A-F]{1,4}/).nil?
-          fail(SyntaxError, "#{arg} is not a valid hexidecimal number")
-        else
-          arg.to_i(16)
-        end
-      when nil then nil
-      else
-        fail(SyntaxError, "Cannot parse argument #{arg}")
-      end
-
       if definition[@mode].nil?
         fail(InvalidInstruction, "#{op} cannot be used in #{mode} mode")
       end
+
       @description, @flags = definition.values_at(:description, :flags)
       @hex, @length, @cycles, @boundry_add = definition[@mode].values_at(:hex, :len, :cycles, :boundry_add)
     end
 
 
     ####
-    ##  Does this instruction have unresolved symbols?
-    def unresolved_symbols?
-      @arg.kind_of?(Symbol)
+    ##  Execute writes the emitted bytes to virtual memory, and updates PC
+    ##  If there is a symbolic argument, we can try to resolve it now, or
+    ##  promise to resolve it later.
+    def exec(assembler)
+
+      ##  Save these current values into the closure/promise
+      pc = assembler.program_counter
+      segment = assembler.current_segment
+      bank = assembler.current_bank
+
+      ##  Create a promise if this symbol is not defined yet.
+      promise = lambda do 
+        @arg = assembler.symbol_table.resolve_symbol(@arg)
+
+        ##  If the instruction uses a byte selector, we need to apply that.
+        @arg = apply_byte_selector(@byte_selector, @arg)
+
+        ##  If the instruction is relative we need to work out how far away it is
+        @arg = @arg - pc - 2 if @mode == :relative
+
+        assembler.write_memory(emit_bytes, pc, segment, bank)
+      end
+
+      case @arg
+      when Fixnum, NilClass
+        assembler.write_memory(emit_bytes)
+      when String
+        begin
+          promise.call
+        rescue SymbolTable::UndefinedSymbol
+          placeholder = [@hex, 0xDE, 0xAD][0...@length]
+          ##  I still have to write a placeholder instruction of the right
+          ##  length.  The promise will come back and resolve the address.
+          assembler.write_memory(placeholder, pc, segment, bank)
+          return promise
+        end
+      end
     end
 
 
     ####
+    ##  Apply a byte selector to an argument
+    def apply_byte_selector(byte_selector, value)
+      return value if byte_selector.nil?
+      case byte_selector
+      when :>
+        high_byte(value)
+      when :<
+        low_byte(value)
+      end
+    end
+
+
+    ####
+    ##  Emit bytes from asm structure
+    def emit_bytes
+      case @length
+      when 1
+        [@hex]
+      when 2
+        [@hex, @arg]
+      when 3
+        [@hex] + break_16(@arg)
+      else
+        fail("Can't handle instructions > 3 bytes")
+      end
+    end
+
+
+
+    ####
     ##  Resolve symbols
+=begin
     def resolve_symbols(symbols)
       if unresolved_symbols?
         if symbols[@arg].nil?
@@ -257,42 +293,18 @@ module Assembler6502
         end
       end
     end
-
-
-    ####
-    ##  Emit bytes from asm structure
-    def emit_bytes
-      fail(UnresolvedSymbols, "Symbol #{@arg.inspect} needs to be resolved") if unresolved_symbols?
-      case @length
-      when 1
-        [@hex]
-      when 2
-        [@hex, @arg]
-      when 3
-        [@hex] + break_16(@arg)
-      else
-        fail("Can't handle instructions > 3 bytes")
-      end
-    end
-
-
-    ####
-    ##  Hex dump of this instruction
-    def hexdump
-      emit_bytes.map{|byte| sprintf("%.2X", byte & 0xFF)}
-    end
+=end
 
 
     ####
     ##  Pretty Print
     def to_s
-      if unresolved_symbols?
-        display = AddressingModes[@mode][:display]
-        sprintf("%.4X | %s %s", @address, @op, @arg.to_s)
-      else
-        display = AddressingModes[@mode][:display]
-        sprintf("%.4X | #{display}", @address, @op, @arg)
-      end
+      #display = AddressingModes[@mode][:display]
+      #if @arg.kind_of?(String)
+        #sprintf("#{display} (#{@mode}, #{@arg})", @op, 0x0)
+      #else
+        #sprintf("#{display} (#{@mode})", @op, @arg)
+      #end
     end
 
 

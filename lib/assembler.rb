@@ -1,180 +1,200 @@
-require_relative 'module_functions'
-require_relative 'opcodes'
-require_relative 'memory'
-require_relative 'directive'
-require_relative 'instruction'
-require_relative 'label'
+require_relative 'symbol_table'
+require_relative 'memory_space'
+require_relative 'parser'
 
 module Assembler6502
 
-
-  ####
-  ##  The Main Assembler
   class Assembler
+    attr_reader :program_counter, :current_segment, :current_bank, :symbol_table, :virtual_memory, :promises
 
-
-    ##  Custom exceptions
-    class INESHeaderNotFound < StandardError; end
-    class MapperNotSupported < StandardError; end
+    #####  Custom exceptions
+    class AddressOutOfRange < StandardError; end
+    class InvalidSegment < StandardError; end
+    class WriteOutOfBounds < StandardError; end
+    class INESHeaderAlreadySet < StandardError; end
+    class FileNotFound < StandardError; end
 
 
     ####
     ##  Assemble from an asm file to a nes ROM
     def self.from_file(infile, outfile)
-      assembler = self.new(File.read(infile))
-      byte_array = assembler.assemble
+      fail(FileNotFound, infile) unless File.exists?(infile)
 
+      assembler = self.new
+      program = File.read(infile)
+
+      puts "Building #{infile}"
+      ##  Process each line in the file
+      program.split(/\n/).each do |line|
+        assembler.assemble_one_line(line)
+        print '.'
+      end
+      puts
+
+      ##  Second pass to resolve any missing symbols.
+      print "Second pass, resolving symbols..."
+      assembler.fulfill_promises
+      puts " Done."
+
+      ##  Let's export the symbol table to a file
+      print "Writing symbol table to #{outfile}.yaml..."
+      File.open("#{outfile}.yaml", 'w') do |fp|
+        fp.write(assembler.symbol_table.export_to_yaml)
+      end
+      puts "Done."
+
+      ##  For right now, let's just emit the first prog bank
       File.open(outfile, 'w') do |fp|
-        fp.write(byte_array.pack('C*'))
+        fp.write(assembler.emit_binary_rom)
       end
+      puts "All Done :)"
     end
 
 
     ####
-    ##  Instantiate a new Assembler with a full asm 
-    ##  file as given in a string.
-    def initialize(assembly_code)
+    ##  Initialize with a bank 1 of prog space for starters
+    def initialize
       @ines_header = nil
-      @assembly_code = assembly_code
+      @program_counter = 0x0
+      @current_segment = :prog
+      @current_bank = 0x0
+      @symbol_table = SymbolTable.new
+      @promises = []
+      @virtual_memory = {
+        :prog => [MemorySpace.create_prog_rom],
+        :char => []
+      }
     end
 
 
     ####
-    ##  New ROM assembly, this is so simplified, and needs to take banks into account
-    ##  This will happen once I fully understand mappers and banks.
-    def assemble
-      ##  Assemble into a virtual memory space
-      virtual_memory = assemble_in_virtual_memory
+    ##  This is the main assemble method, it parses one line into an object
+    ##  which when given a reference to this assembler, controls the assembler
+    ##  itself through public methods, executing assembler directives, and 
+    ##  emitting bytes into our virtual memory spaces.  Empty lines or lines
+    ##  with only comments parse to nil, and we just ignore them.
+    def assemble_one_line(line)
+      parsed_object = Parser.parse(line)
 
-      ##  First we need to be sure we have an iNES header
-      fail(MapperNotSupported, "Mapper #{@ines_header.mapper} not supported") if @ines_header.mapper != 0
+      unless parsed_object.nil?
+        exec_result = parsed_object.exec(self)
 
-      ##  First we need to be sure we have an iNES header
-      fail(INESHeaderNotFound) if @ines_header.nil?
+        ##  If we have returned a promise save it for the second pass
+        @promises << exec_result if exec_result.kind_of?(Proc)
+      end
+    end
 
-      ##  Now we want to create a ROM layout for PROG
-      ##  This is simplified and only holds max two PROG entries
-      prog_rom = MemorySpace.new(@ines_header.prog * MemorySpace::ProgROMSize)
-      case @ines_header.prog
-      when 0
-        fail("You must have at least one PROG section")
-        exit(1)
-      when 1
-        prog_rom.write(0x0, virtual_memory.read(0xc000, MemorySpace::ProgROMSize))
-      when 2
-        prog_rom.write(0x0, virtual_memory.read(0x8000, MemorySpace::ProgROMSize))
-        prog_rom.write(MemorySpace::ProgROMSize, virtual_memory.read(0xC000, MemorySpace::ProgROMSize))
-      else
-        fail("I can't support more than 2 PROG sections")
-        exit(1)
+
+    ####
+    ##  This will empty out our promise queue and try to fullfil operations
+    ##  that required an undefined symbol when first encountered.
+    def fulfill_promises
+      while promise = @promises.pop
+        promise.call
+      end
+    end
+
+
+    ####
+    ##  Write to memory space. Typically, we are going to want to write
+    ##  to the location of the current PC, current segment, and current bank.
+    ##  Bounds check is inside MemorySpace#write
+    def write_memory(bytes, pc = @program_counter, segment = @current_segment, bank = @current_bank)
+      memory_space = get_virtual_memory_space(segment, bank)
+      memory_space.write(pc, bytes)
+      @program_counter += bytes.size
+    end
+
+
+    ####
+    ##  Set the iNES header
+    def set_ines_header(ines_header)
+      fail(INESHeaderAlreadySet) unless @ines_header.nil?
+      @ines_header = ines_header
+    end
+
+
+    ####
+    ##  Set the program counter
+    def program_counter=(address)
+      fail(AddressOutOfRange) unless address_within_range?(address)
+      @program_counter = address
+    end
+
+
+    ####
+    ##  Set the current segment, prog or char.
+    def current_segment=(segment)
+      segment = segment.to_sym
+      unless valid_segment?(segment)
+        fail(InvalidSegment, "#{segment} is not a valid segment.  Try prog or char")
+      end
+      @current_segment = segment
+    end
+
+
+    ####
+    ##  Set the current bank, create it if it does not exist
+    def current_bank=(bank_number)
+      memory_space = get_virtual_memory_space(@current_segment, bank_number)
+      if memory_space.nil?
+        @virtual_memory[@current_segment][bank_number] = MemorySpace.create_bank(@current_segment)
+      end
+      @current_bank = bank_number
+    end
+
+
+    ####
+    ##  Emit a binary ROM
+    def emit_binary_rom
+      progs = @virtual_memory[:prog]
+      chars = @virtual_memory[:char]
+      puts "iNES Header"
+      puts "+ #{progs.size} PROG ROM bank#{progs.size != 1 ? 's' : ''}"
+      puts "+ #{chars.size} CHAR ROM bank#{chars.size != 1 ? 's' : ''}"
+
+      rom_size  = 0x10 
+      rom_size += MemorySpace::BankSizes[:prog] * progs.size
+      rom_size += MemorySpace::BankSizes[:char] * chars.size
+
+      puts "= Output ROM will be #{rom_size} bytes"
+      rom = MemorySpace.new(rom_size, :rom)
+
+      offset = 0x0
+      offset += rom.write(0x0, @ines_header.emit_bytes)
+
+      progs.each do |prog|
+        offset += rom.write(offset, prog.read(0x8000, MemorySpace::BankSizes[:prog]))
       end
 
-      ##  Now we want to create a ROM layout for CHAR
-      ##  This is simplified and only holds max two CHAR entries
-      char_rom = MemorySpace.new(@ines_header.char * MemorySpace::CharROMSize)
-      case @ines_header.char
-      when 0
-      when 1
-        char_rom.write(0x0, virtual_memory.read(0x0000, MemorySpace::CharROMSize))
-      when 2
-        char_rom.write(0x0, virtual_memory.read(0x0000, MemorySpace::CharROMSize))
-        char_rom.write(MemorySpace::CharROMSize, virtual_memory.read(0x2000, MemorySpace::CharROMSize))
-      else
-        fail("I can't support more than 2 CHAR sections")
-        exit(1)
+      chars.each do |char|
+        offset += rom.write(offset, char.read(0x0, MemorySpace::BankSizes[:char]))
       end
-
-      if @ines_header.char.zero?
-        @ines_header.emit_bytes + prog_rom.emit_bytes
-      else
-        @ines_header.emit_bytes + prog_rom.emit_bytes + char_rom.emit_bytes
-      end
+      rom.emit_bytes.pack('C*')
     end
 
 
     private
 
+
     ####
-    ##  Run the assembly process into a virtual memory object
-    def assemble_in_virtual_memory
-      address = 0x0
-      labels = {}
-      memory = MemorySpace.new
-      unresolved_instructions = []
+    ##  Get virtual memory space
+    def get_virtual_memory_space(segment, bank_number)
+      @virtual_memory[segment][bank_number]
+    end
 
-      puts "Assembling, first pass..."
-      @assembly_code.split(/\n/).each do |raw_line|
-        sanitized = Assembler6502.sanitize_line(raw_line)
-        next if sanitized.empty?
-        parsed_line = Assembler6502::Instruction.parse(sanitized, address)
-        
-        case parsed_line
-        when INESHeader
-          fail(SyntaxError, "Already got ines header") unless @ines_header.nil?
-          @ines_header = parsed_line
-          puts "\tGot iNES Header"
 
-        when Org
-          address = parsed_line.address
-          puts "\tMoving to address: $%X" % address
+    ####
+    ##  Is this a 16-bit address within range?
+    def address_within_range?(address)
+      address >= 0 && address < 2**16
+    end
 
-        when Label
-          puts "\tLabel #{parsed_line.label} = $%X" % parsed_line.address
-          labels[parsed_line.label.to_sym] = parsed_line
 
-        when Instruction
-          if parsed_line.unresolved_symbols?
-            puts "\tSaving instruction with unresolved symbols #{parsed_line}, for second pass"
-            unresolved_instructions << parsed_line
-          else
-            puts "\tWriting instruction #{parsed_line}"
-            memory.write(parsed_line.address, parsed_line.emit_bytes)
-          end
-          address += parsed_line.length
-
-        when IncBin
-          puts "\t Including binary file #{parsed_line.filepath}"
-          memory.write(parsed_line.address, parsed_line.emit_bytes)
-          address += parsed_line.size
-
-        when DW
-          if parsed_line.unresolved_symbols?
-            puts "\tSaving #{parsed_line} directive with unresolved symbols, for second pass"
-            unresolved_instructions << parsed_line
-          else
-            puts "\tWriting #{parsed_line} to memory"
-            memory.write(address, parsed_line.emit_bytes)
-          end
-          address += 2
-
-        when Bytes
-          bytes = parsed_line.emit_bytes
-          puts "\tWriting raw #{bytes.size} bytes to #{sprintf("$%X", address)}"
-          memory.write(address, bytes)
-          address += bytes.size
-
-        when ASCII
-          bytes = parsed_line.emit_bytes
-          puts "\tWriting ascii string to memory \"#{bytes.pack('C*')}\""
-          memory.write(address, bytes)
-          address += bytes.size
-
-        else
-          fail(SyntaxError, sprintf("%.4X: Failed to parse: #{parsed_line}", address))
-        end
-      end
-
-      puts "Second pass: Resolving Symbols..."
-      unresolved_instructions.each do |instruction|
-        if instruction.unresolved_symbols?
-          instruction.resolve_symbols(labels)
-        end
-        puts "\tResolved #{instruction}"
-        memory.write(instruction.address, instruction.emit_bytes)
-      end
-      puts 'Done'
-
-      memory
+    ####
+    ##  Is this a valid segment?
+    def valid_segment?(segment)
+      [:prog, :char].include?(segment)
     end
 
   end

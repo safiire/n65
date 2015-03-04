@@ -78,6 +78,17 @@ module Assembler6502
       value
     end
 
+
+    ####
+    ##  Export the symbol table as YAML
+    def export_to_yaml
+      @symbols.to_yaml.gsub(/(\d+)$/) do |match|
+        integer = match.to_i
+        sprintf("0x%.4X", integer)
+      end
+    end
+
+
     private
 
     ####
