@@ -5,36 +5,36 @@ module Assembler6502
 
   ####
   ##  This directive to include bytes
-  class ASCII < InstructionBase
+  class EnterScope < InstructionBase
 
 
     ####
     ##  Try to parse an incbin directive
     def self.parse(line)
-      match_data = line.match(/^\.ascii\s+"([^"]+)"$/)
+      match_data = line.match(/^\.scope\s+([a-zA-Z][a-zA-Z0-9_]+)$/)
       return nil if match_data.nil?
-      ASCII.new(match_data[1])
+      EnterScope.new(match_data[1])
     end
 
 
     ####
     ##  Initialize with filename
-    def initialize(string)
-      @string = string
+    def initialize(name)
+      @name = name
     end
 
 
     ####
     ##  Execute on the assembler
     def exec(assembler)
-      assembler.write_memory(@string.bytes)
+      assembler.symbol_table.enter_scope(@name)
     end
 
 
     ####
     ##  Display
     def to_s
-      ".ascii \"#{@string}\""
+      ".scope #{@name}"
     end
 
   end
