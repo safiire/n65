@@ -25,10 +25,10 @@ sprite:
 .dw irq
 
 
-.org $C000
 ;;;;
 ;  Here is our code entry point, which we'll call main.
-main:
+.org $C000
+.scope main
   ;  Disable interrupts and decimal flag
   sei
   cld
@@ -74,40 +74,43 @@ main:
   cli
   forever:
     jmp forever
+.
 
 
 ;;;;
 ; Set basic PPU registers.  Load background from $0000,
 ; sprites from $1000, and the name table from $2000.
-init_ppu:
+.scope init_ppu
   lda #$88
   sta $2000
   lda #$1E
   sta $2001
   rts
+.
 
 
 ;;;;
 ;  Initialize all the sprites, palettes, nametables, and scrolling
-init_graphics:
+.scope init_graphics
   jsr init_sprites
   jsr load_palette
   jsr load_name_tables
   jsr init_scrolling
   rts
+.
 
 
 ;;;;
 ;  Initialize the controller input, keeping track of the A button
-init_input:
+.scope init_input
   lda #$00
   sta $01    ; $01 = A button
   rts
+.
 
 ;;;;
 ;  Initialize the APU to known values
-init_sound:
-  ; initialize sound hardware
+.scope init_sound
   lda #$01
   sta $4015
   lda #$00
@@ -115,13 +118,14 @@ init_sound:
   lda #$40
   sta $4017
   rts
+.
 
 
 ;;;;
 ;  Clear page #2, which we'll use to hold sprite data
 ;  This subroutine clearly shows why I need to have symbols
 ;  to refer to bits of RAM in the zero page like dx, etc.
-init_sprites:
+.scope init_sprites
   lda #$00
   ldx #$00
   sprite_clear1:
@@ -140,26 +144,28 @@ init_sprites:
   lda #$01
   sta $00                 ;  dx = $00
   rts
+.
 
 ;;;;
 ;  Load palette into $3F00
-load_palette:
+.scope load_palette
   lda #$3F
   ldx #$00
   sta $2006
   stx $2006
-  loady_loop:
+  loop:
     lda palette, X
     sta $2007
     inx
     cpx #$20
-    bne loady_loop
+    bne loop
   rts
+.
 
 ;;;;
 ; Put the ASCII values from bg into the first name table, at $2400
 ; The tile values are conveniently mapped to their ASCII values
-load_name_tables:
+.scope load_name_tables
   ldy #$00
   ldx #$04
   lda #<bg
@@ -170,14 +176,14 @@ load_name_tables:
   sta $2006
   lda #$00
   sta $2006
-  go_back:
+  loop:
     lda ($10), Y
     sta $2007
     iny
-    bne go_back
+    bne loop
     inc $11
     dex
-    bne go_back
+    bne loop
   ;  This now clears the second name table?
   ;  I think this is because writing to $2007 auto increments the
   ;  written value
@@ -191,15 +197,17 @@ load_name_tables:
     dex
     bne back
   rts
+.
 
 
 ;;;;
 ;  This initializes the scrolling storing the scroll
 ;  value in the zero page variable $02
-init_scrolling:
+.scope init_scrolling
   lda #$F0
   sta $02
   rts
+.
 
 
 ;;;;
@@ -216,7 +224,6 @@ update_sprite:
   stx $00                   ;  dx
   jsr high_c
   jmp edge_done
-
 
 hit_left:
   ldx #$01

@@ -7,10 +7,16 @@ module Assembler6502
   ##  This directive to include bytes
   class EnterScope < InstructionBase
 
-
     ####
     ##  Try to parse an incbin directive
     def self.parse(line)
+      ##  Anonymous scope
+      match_data = line.match(/^\.scope$/)
+      unless match_data.nil?
+        EnterScope.new
+      end
+
+      ##  Named scope
       match_data = line.match(/^\.scope\s+([a-zA-Z][a-zA-Z0-9_]+)$/)
       return nil if match_data.nil?
       EnterScope.new(match_data[1])
@@ -19,7 +25,7 @@ module Assembler6502
 
     ####
     ##  Initialize with filename
-    def initialize(name)
+    def initialize(name = nil)
       @name = name
     end
 
@@ -32,7 +38,9 @@ module Assembler6502
     ##  name as a label, it can return the address when the scope opened.
     def exec(assembler)
       assembler.symbol_table.enter_scope(@name)
-      assembler.symbol_table.define_symbol("-#{@name}", assembler.program_counter)
+      unless @name.nil?
+        assembler.symbol_table.define_symbol("-#{@name}", assembler.program_counter)
+      end
     end
 
 
