@@ -13,7 +13,7 @@ module Assembler6502
       ##  Anonymous scope
       match_data = line.match(/^\.scope$/)
       unless match_data.nil?
-        EnterScope.new
+        return EnterScope.new
       end
 
       ##  Named scope
