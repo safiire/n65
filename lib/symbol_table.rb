@@ -1,3 +1,4 @@
+
 module Assembler6502
 
   class SymbolTable
@@ -61,15 +62,22 @@ module Assembler6502
     ##  To go backwards in scope you need to write the full path
     ##  like global.sprite.x or whatever
     def resolve_symbol(name)
+
       value = if name.include?('.')
         path_ary = name.split('.').map(&:to_sym)
         symbol = path_ary.pop
         path_ary.shift if path_ary.first == :global
         scope = retreive_scope(path_ary)
-        scope[symbol]
+        ##  We also try to look up the address associated with the scope
+        root = "-#{symbol}".to_sym
+        v = scope[symbol]
+        v.kind_of?(Hash) ? v[root] : v
       else
+        root = "-#{name}".to_sym
         scope = current_scope
-        scope[name.to_sym]
+        ##  We also try to look up the address associated with the scope
+        v = scope[name.to_sym] || scope[root]
+        v.kind_of?(Hash) ? v[root] : v
       end
 
       if value.nil?

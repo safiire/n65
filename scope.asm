@@ -7,10 +7,9 @@
 .segment prog 0
 .org $8000
 
-.scope yay
-  main:
-    sei
-    cld
+.scope main
+  sei
+  cld
   loop:
     ldx $00
     inx
@@ -27,5 +26,5 @@ irq:
 .org $FFFA
 
 .dw vblank
-.dw yay.main
+.dw main
 .dw irq

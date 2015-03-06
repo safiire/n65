@@ -25,9 +25,14 @@ module Assembler6502
 
 
     ####
-    ##  Execute on the assembler
+    ##  Execute on the assembler, also create a symbol referring to 
+    ##  the current pc which contains a hyphen, and is impossible for
+    ##  the user to create.  This makes a scope simultaneously act as
+    ##  a label to the current PC.  If someone tries to use a scope
+    ##  name as a label, it can return the address when the scope opened.
     def exec(assembler)
       assembler.symbol_table.enter_scope(@name)
+      assembler.symbol_table.define_symbol("-#{@name}", assembler.program_counter)
     end
 
 

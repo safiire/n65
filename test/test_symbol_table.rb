@@ -3,6 +3,7 @@ require 'minitest/autorun'
 require 'minitest/unit'
 
 require_relative '../lib/symbol_table.rb'
+require_relative '../lib/assembler.rb'
 
 
 class TestSymbolTable < MiniTest::Test
@@ -10,7 +11,7 @@ class TestSymbolTable < MiniTest::Test
 
   ####
   ##  Test that we can make simple global symbols
-  def _test_define_global_symbols
+  def test_define_global_symbols
     st = SymbolTable.new
     st.define_symbol('dog', 'woof')
     assert_equal('woof', st.resolve_symbol('dog'))
@@ -19,7 +20,7 @@ class TestSymbolTable < MiniTest::Test
 
   ####
   ##  Test entering into a sub scope, and setting and retrieving values
-  def _test_enter_scope
+  def test_enter_scope
     st = SymbolTable.new
     st.enter_scope('animals')
     st.define_symbol('dog', 'woof')
@@ -29,7 +30,7 @@ class TestSymbolTable < MiniTest::Test
 
   ####
   ##  Test exiting a sub scope, and seeing that the variable is unavailable by simple name
-  def _test_exit_scope
+  def test_exit_scope
     st = SymbolTable.new
     st.enter_scope('animals')
     st.define_symbol('dog', 'woof')
@@ -122,6 +123,34 @@ class TestSymbolTable < MiniTest::Test
     assert_raises(SymbolTable::CantExitScope) do 
       st.exit_scope
     end
+  end
+
+
+  ####
+  ##  I would like the name of the scope to take on the 
+  ##  value of the program counter at that location.
+  def test_scope_as_symbol
+    program = <<-ASM
+      .ines {"prog": 1, "char": 0, "mapper": 0, "mirror": 0}
+      .org $8000
+      .segment prog 0
+      .scope main
+        sei
+        cld
+        lda \#$00
+        jmp main
+      .
+      jmp main
+      jmp global.main
+    ASM
+
+    ####  There really should be an evaluate string method
+    assembler = Assembler.new
+    program.split(/\n/).each do |line|
+      assembler.assemble_one_line(line)
+    end
+    assembler.fulfill_promises
+    assert_equal(0x8000, assembler.symbol_table.resolve_symbol('global.main'))
   end
 
 end
