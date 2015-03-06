@@ -12,6 +12,7 @@ module Assembler6502
   require_relative 'directives/label'
   require_relative 'directives/enter_scope'
   require_relative 'directives/exit_scope'
+  require_relative 'directives/space'
 
 
   ####
@@ -24,7 +25,7 @@ module Assembler6502
     class CannotParse < StandardError; end
 
 
-    Directives = [INESHeader, Org, Segment, IncBin, DW, Bytes, ASCII, EnterScope, ExitScope]
+    Directives = [INESHeader, Org, Segment, IncBin, DW, Bytes, ASCII, EnterScope, ExitScope, Space]
 
     ####
     ##  Parses a line of program source into an object

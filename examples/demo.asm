@@ -13,9 +13,17 @@
 ;  Here is a good spot to associate zero page memory addresses
 ;  with quick access variables in the program.
 .segment prog 0
-.org $0200
-sprite:
 
+
+;;;;
+;  We can use scope to declare a C like struct at $0200
+.org $0200
+.scope sprite
+  .space y 1
+  .space pattern 1
+  .space color 1
+  .space x 1
+.
 
 ;;;;
 ;  Setup the interrupt vectors
@@ -135,10 +143,10 @@ sprite:
 
   ; initialize Sprite 0
   lda #$70
-  sta $0200                ; sprite Y coordinate
+  sta sprite.y              ; Store sprite y coordinate ;sta $0200                ; sprite Y coordinate
   lda #$01
-  sta $0201                ; sprite + 1 Pattern number
-  sta $0203                ; sprite + 3 X coordinate, sprite + 2, color, stays 0.
+  sta sprite.pattern       ; sta $0201                ; sprite + 1 Pattern number
+  sta sprite.x             ;sta $0203                ; sprite + 3 X coordinate, sprite + 2, color, stays 0.
 
   ; Set initial value of dx
   lda #$01
@@ -215,7 +223,7 @@ sprite:
 update_sprite:
   lda #>sprite
   sta $4014                ; Jam page $200-$2FF into SPR-RAM
-  lda $0203                ;  sprite+3  Is this right???
+  lda sprite.x             
   beq hit_left
   cmp #$F7
   bne edge_done
@@ -233,7 +241,7 @@ hit_left:
 edge_done:                ; update X and store it.
   clc
   adc $00                 ;  dx
-  sta $0203                ;  sprite+3 Is this right?
+  sta sprite.x            
   rts
 
 react_to_input:
@@ -259,21 +267,21 @@ react_to_input:
     lda $4016                ; Up
     and #$01
     beq not_up
-    ldx sprite                ; Load Y value
+    ldx sprite.y             ; Load Y value
     cpx #$07
-    beq not_up                ; No going past the top of the screen
+    beq not_up               ; No going past the top of the screen
     dex
-    stx sprite
+    stx sprite.y
 
   not_up: 
     lda $4016                ; Down
     and #$01
     beq not_dn
-    ldx sprite
+    ldx sprite.y
     cpx #$DF                  ; No going past the bottom of the screen.
     beq not_dn
     inx
-    stx sprite
+    stx sprite.y
   not_dn: 
   rts                                ; Ignore left and right, we don't use 'em
 
