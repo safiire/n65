@@ -58,7 +58,7 @@ An NES assembler for the 6502 microprocessor written in Ruby
   There is an example file included (shown below) that is a modified port of
   the NES101 tutorial by Michael Martin.
 
-  ![Scrolling NES Demo](assembler_demo.png)
+  ![Scrolling NES Demo](github_images/assembler_demo.png)
 
   Some Todos:
   - Get an NSF file playing
