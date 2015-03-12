@@ -9,9 +9,16 @@
 ;  Create an iNES header
 .ines {"prog": 1, "char": 1, "mapper": 0, "mirror": 0}
 
+
+;;;;
+;  Include all the symbols in the nes scope
+.inc <nes.sym>
+
+
 ;;;;
 ;  Open the prog section bank 0
 .segment prog 0
+
 
 ;;;;
 ;  Here is a good spot to associate zero page memory addresses
@@ -32,6 +39,7 @@
   .space x 1
 .
 
+
 ;;;;
 ;  Setup the interrupt vectors
 .org $FFFA
@@ -50,24 +58,24 @@
 
   ;  Wait for 2 vblanks
   wait_vb1:
-    lda $2002
+    lda nes.ppu.status
     bpl wait_vb1
   wait_vb2:
-    lda $2002
+    lda nes.ppu.status
     bpl wait_vb2
 
   ;  Now we want to initialize the hardware to a known state
   lda #$00
   ldx #$00
   clear_segments:
-    sta $00, X
-    sta $0100, X
-    sta $0200, X
-    sta $0300, X
-    sta $0400, X
-    sta $0500, X
-    sta $0600, X
-    sta $0700, X
+    sta $00, x
+    sta $0100, x
+    sta $0200, x
+    sta $0300, x
+    sta $0400, x
+    sta $0500, x
+    sta $0600, x
+    sta $0700, x
     inx
     bne clear_segments
 
@@ -75,10 +83,10 @@
   ldx #$FF
   txs
 
-  ;  Disable all graphics.
+  ;  Disable all graphics and vblank nmi
   lda #$00
-  sta $2000
-  sta $2001
+  sta nes.ppu.control1
+  sta nes.ppu.control2
 
   jsr init_graphics
   jsr init_input
@@ -95,11 +103,12 @@
 ;;;;
 ; Set basic PPU registers.  Load background from $0000,
 ; sprites from $1000, and the name table from $2000.
+; These literals would make more sense in binary.
 .scope init_ppu
   lda #$88
-  sta $2000
+  sta nes.ppu.control1
   lda #$1E
-  sta $2001
+  sta nes.ppu.control2
   rts
 .
 
@@ -123,15 +132,16 @@
   rts
 .
 
+
 ;;;;
 ;  Initialize the APU to known values
 .scope init_sound
   lda #$01
-  sta $4015
+  sta nes.apu.channel_enable
   lda #$00
-  sta $4001
+  sta nes.apu.square1.reg2
   lda #$40
-  sta $4017
+  sta nes.controller2          ;  Why are we doing this to controller 2?  Mistake?
   rts
 .
 
@@ -149,7 +159,7 @@
     bne sprite_clear1
 
   ; initialize Sprite 0
-  lda #$70
+  lda #$70                       ;  Y Coordinate
   sta sprite.y                   ;  Initialize the y value of sprite 
   lda #$01
   sta sprite.pattern             ;  Pattern number 1
@@ -161,21 +171,23 @@
   rts
 .
 
+
 ;;;;
 ;  Load palette into $3F00
 .scope load_palette
   lda #$3F
   ldx #$00
-  sta $2006
-  stx $2006
+  sta nes.ppu.address
+  stx nes.ppu.address
   loop:
-    lda palette, X
-    sta $2007
+    lda palette, x
+    sta nes.ppu.data
     inx
     cpx #$20
     bne loop
   rts
 .
+
 
 ;;;;
 ; Put the ASCII values from bg into the first name table, at $2400
@@ -184,16 +196,16 @@
   ldy #$00
   ldx #$04
   lda #<bg
-  sta $10
+  sta $10           
   lda #>bg
   sta $11
   lda #$24
-  sta $2006
+  sta nes.ppu.address
   lda #$00
-  sta $2006
+  sta nes.ppu.address
   loop:
     lda ($10), Y
-    sta $2007
+    sta nes.ppu.data
     iny
     bne loop
     inc $11
@@ -205,9 +217,9 @@
   ldy #$00
   ldx #$04
   lda #$00
-  .scope              ; We can reuse loop, in an anonymous scope, if we want
+  .scope
     loop:
-      sta $2007
+      sta nes.ppu.data
       iny
       bne loop
       dex
@@ -228,38 +240,41 @@
 
 
 ;;;;
-;  Update the sprite, I don't exactly understand this yet.
+;  Update the sprite, I don't exactly understand the DMA call yet.
 update_sprite:
   lda #>sprite
-  sta $4014                ; Jam page $200-$2FF into SPR-RAM
+  sta nes.ppu.sprite_dma           ; Jam page $200-$2FF into SPR-RAM, how do we get these numbers?
   lda sprite.x             
   beq hit_left
   cmp #$F7
-  bne edge_done
+  bne edge_done          ; Detect hitting either edge
   ; Hit right
   ldx #$FF
   stx dx zp
-  jsr high_c
+  jsr high_c             ; And play a high C note if we do
   jmp edge_done
 
-hit_left:
-  ldx #$01
-  stx dx zp
-  jsr high_c
+  hit_left:
+    ldx #$01
+    stx dx zp
+    jsr high_c
 
-edge_done:                ; update X and store it.
-  clc
-  adc dx zp  
-  sta sprite.x            
+  edge_done:                ; update X and store it.
+    clc
+    adc dx zp  
+    sta sprite.x            
   rts
 
+
+;;;;
+;  Read the first controller, and handle input
 react_to_input:
   lda #$01                ; strobe joypad
-  sta $4016
+  sta nes.controller1
   lda #$00
-  sta $4016
+  sta nes.controller1
 
-  lda $4016               ; Is the A button down?
+  lda nes.controller1     ; Is the A button down?
   and #$01
   beq not_a
   ldx a_button zp
@@ -270,20 +285,20 @@ react_to_input:
   not_a:  
     sta a_button zp       ; A has been released, so put that zero into 'a'.
   a_done: 
-    lda $4016                ; B does nothing
-    lda $4016                ; Select does nothing
-    lda $4016                ; Start does nothing
-    lda $4016                ; Up
+    lda nes.controller1   ; B does nothing
+    lda nes.controller1   ; Select does nothing
+    lda nes.controller1   ; Start does nothing
+    lda nes.controller1   ; Up
     and #$01
     beq not_up
-    ldx sprite.y             ; Load Y value
+    ldx sprite.y          ; Load Y value
     cpx #$07
-    beq not_up               ; No going past the top of the screen
+    beq not_up            ; No going past the top of the screen
     dex
     stx sprite.y
 
   not_up: 
-    lda $4016                ; Down
+    lda nes.controller1   ; Down
     and #$01
     beq not_dn
     ldx sprite.y
@@ -292,58 +307,67 @@ react_to_input:
     inx
     stx sprite.y
   not_dn: 
-  rts                                ; Ignore left and right, we don't use 'em
+  rts                         ; Ignore left and right
 
+
+;;;;
+;  XORing with $ff toggles between 0x1 and 0xfe (-1)
 reverse_dx:
   lda #$FF
-  eor dx zp        ; dx  Toggles between 0x1 and 0xfe (-1)
+  eor dx zp
   clc
-  adc #$01         ; add dx, and store to variable
+  adc #$01         ; Add dx, and store to variable
   sta dx zp
-  jsr low_c
+  jsr low_c        ; Play the reverse low C note
   rts
 
-scroll_screen:
-  ldx #$00                ; Reset VRAM
-  stx $2006
-  stx $2006
 
-  ldx scroll zp           ; scroll                ; Do we need to scroll at all?
+;;;;
+;  Scroll the screen if we have to
+scroll_screen:
+  ldx #$00                ; Reset VRAM Address to $0000
+  stx nes.ppu.address
+  stx nes.ppu.address
+
+  ldx scroll zp           ; Do we need to scroll at all?
   beq no_scroll
   dex
-  stx scroll zp           ; scroll
+  stx scroll zp           
   lda #$00
-  sta $2005                ; Write 0 for Horiz. Scroll value
-  stx $2005                ; Write the value of 'scroll' for Vert. Scroll value
+  sta nes.ppu.scroll  ; Write 0 for Horiz. Scroll value
+  stx nes.ppu.scroll  ; Write the value of 'scroll' for Vert. Scroll value
 
 no_scroll:
   rts
 
+  
 ;;;;
-;  I am pretty sure this plays a low C note on the Square wave
+;  Play a low C note on square 1
 low_c:
   pha
   lda #$84
-  sta $4000
+  sta nes.apu.square1.reg1
   lda #$AA
-  sta $4002
+  sta nes.apu.square1.reg3
   lda #$09
-  sta $4003
+  sta nes.apu.square1.reg4
   pla
   rts
 
+
 ;;;;
-;  I am pretty sure this plays a high C note on the Square wave
+;  Play a high C note on square 1
 high_c:
   pha
   lda #$86
-  sta $4000
+  sta nes.apu.square1.reg1
   lda #$69
-  sta $4002
+  sta nes.apu.square1.reg3
   lda #$08
-  sta $4003
+  sta nes.apu.square1.reg4
   pla
   rts
+
 
 ;;;;
 ;  Update everything on every vblank

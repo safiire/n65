@@ -1,0 +1,65 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;  Let's start a little library for naming parts of memory in the NES
+;  We can move this to a separate library file later.
+;  
+;  Including this file will not emit any instructions or data into your binary
+;  It only defines symbols in the symbol table to name memory addresses
+;
+;  Author: Saf Allen 2015
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+.org $0000
+.scope nes
+  .scope ppu
+    .org $2000
+    .space control1 1             ;  Control registers 1 and 2
+    .space control2 1
+    .space status 1               ;  PPU status
+    .space sprite_address 1     ;  Sprite memory address
+    .space sprite_data 1        ;  Sprite memory data
+    .space scroll 1             ;  Background scroll
+    .space address 1              ;  Indexing into PPU memory address
+    .space data 1                 ;  Read or write to PPU memory location through this register
+    .org $4014
+    .space sprite_dma 1           ;  DMA access to sprite memory
+  .
+
+  .org $4000
+  .scope apu
+    .scope square1                ;  Control of Square 1
+      .space reg1 1
+      .space reg2 1
+      .space reg3 1
+      .space reg4 1
+    .
+    .scope square2                ;  Control of Square 2
+      .space reg1 1
+      .space reg2 1
+      .space reg3 1
+      .space reg4 1
+    .
+    .scope triangle                ;  Control of Triangle
+      .space reg1 1
+      .space reg2 1
+      .space reg3 1
+      .space reg4 1
+    .
+    .scope noise                ;  Control of Noise
+      .space reg1 1
+      .space reg2 1
+      .space reg3 1
+      .space reg4 1
+    .
+    .scope dmc                  ;  Control of DMC
+      .space reg1 1
+      .space reg2 1
+      .space reg3 1
+      .space reg4 1
+    .
+    .org $4015
+    .space channel_enable 1      ;  Enable or disble channels
+  .
+  .org $4016
+  .space controller1 1           ;  Player 1 joystick
+  .space controller2 1           ;  Player 2 joystick
+.

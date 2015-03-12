@@ -1,4 +1,4 @@
-# Assembler6502 0.4
+# Assembler6502 0.5
 
 An NES assembler for the 6502 microprocessor written in Ruby
 
@@ -61,6 +61,8 @@ An NES assembler for the 6502 microprocessor written in Ruby
   ![Scrolling NES Demo](github_images/assembler_demo.png)
 
 # Some new additions:
+  - added .inc directive, to include other .asm files.
+  - nes.asm library include file created, naming popular NES addresses
   - C Style in memory structs using .scope and .space directives
   - Explicit usage of zero page instructions with the zp suffix
   - Split the Parser into its own class
@@ -90,8 +92,8 @@ An NES assembler for the 6502 microprocessor written in Ruby
   - Tested a ROM that changes background color
 
 # Some Todos:
+  - Create some documentation.
   - Support binary %10101010 addresses and literals
-  - Create a library which names important NES addresses
   - Make macros that can be used interchangably inline or as a subroutine
   - Create a library for common operations, DMA, sound, etc both inline and subroutine options
   - Give this project a better name.
