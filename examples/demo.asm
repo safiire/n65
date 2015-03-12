@@ -10,9 +10,16 @@
 .ines {"prog": 1, "char": 1, "mapper": 0, "mirror": 0}
 
 ;;;;
-;  Here is a good spot to associate zero page memory addresses
-;  with quick access variables in the program.
+;  Open the prog section bank 0
 .segment prog 0
+
+;;;;
+;  Here is a good spot to associate zero page memory addresses
+;  to symbols that we can use throughout the program.
+.org $0000
+.space dx 1
+.space a_button 1
+.space scroll 1
 
 
 ;;;;
@@ -112,7 +119,7 @@
 ;  Initialize the controller input, keeping track of the A button
 .scope init_input
   lda #$00
-  sta $01    ; $01 = A button
+  sta a_button zp
   rts
 .
 
@@ -143,14 +150,14 @@
 
   ; initialize Sprite 0
   lda #$70
-  sta sprite.y              ; Store sprite y coordinate ;sta $0200                ; sprite Y coordinate
+  sta sprite.y                   ;  Initialize the y value of sprite 
   lda #$01
-  sta sprite.pattern       ; sta $0201                ; sprite + 1 Pattern number
-  sta sprite.x             ;sta $0203                ; sprite + 3 X coordinate, sprite + 2, color, stays 0.
+  sta sprite.pattern             ;  Pattern number 1
+  sta sprite.x                   ;  X value also 1, and leave color 0
 
   ; Set initial value of dx
   lda #$01
-  sta $00                 ;  dx = $00
+  sta dx zp                      ; Initialize delta x value to 1
   rts
 .
 
@@ -198,22 +205,24 @@
   ldy #$00
   ldx #$04
   lda #$00
-  back:
-    sta $2007
-    iny
-    bne back
-    dex
-    bne back
+  .scope              ; We can reuse loop, in an anonymous scope, if we want
+    loop:
+      sta $2007
+      iny
+      bne loop
+      dex
+      bne loop
+  .
   rts
 .
 
 
 ;;;;
-;  This initializes the scrolling storing the scroll
-;  value in the zero page variable $02
+;  This initializes the scrolling value in the zero page 
+;  So that we begin offscreen and can scroll down
 .scope init_scrolling
   lda #$F0
-  sta $02
+  sta scroll zp
   rts
 .
 
@@ -229,18 +238,18 @@ update_sprite:
   bne edge_done
   ; Hit right
   ldx #$FF
-  stx $00                   ;  dx
+  stx dx zp
   jsr high_c
   jmp edge_done
 
 hit_left:
   ldx #$01
-  stx $00                    ;  dx
+  stx dx zp
   jsr high_c
 
 edge_done:                ; update X and store it.
   clc
-  adc $00                 ;  dx
+  adc dx zp  
   sta sprite.x            
   rts
 
@@ -251,15 +260,15 @@ react_to_input:
   sta $4016
 
   lda $4016               ; Is the A button down?
-  AND #$01
+  and #$01
   beq not_a
-  ldx $01                 ;  a
+  ldx a_button zp
   bne a_done              ; Only react if the A button wasn't down last time.
-  sta $01                 ; Store the 1 in local variable 'a' so that we this is
+  sta a_button zp         ; Store the 1 in local variable 'a' so that we this is
   jsr reverse_dx          ; only called once per press.
   jmp a_done
   not_a:  
-    sta $01                 ; A has been released, so put that zero into 'a'.
+    sta a_button zp       ; A has been released, so put that zero into 'a'.
   a_done: 
     lda $4016                ; B does nothing
     lda $4016                ; Select does nothing
@@ -287,10 +296,10 @@ react_to_input:
 
 reverse_dx:
   lda #$FF
-  eor $00          ; dx  Toggles between 0x1 and 0xfe (-1)
+  eor dx zp        ; dx  Toggles between 0x1 and 0xfe (-1)
   clc
   adc #$01         ; add dx, and store to variable
-  sta $00          ; dx
+  sta dx zp
   jsr low_c
   rts
 
@@ -299,10 +308,10 @@ scroll_screen:
   stx $2006
   stx $2006
 
-  ldx $02                 ; scroll                ; Do we need to scroll at all?
+  ldx scroll zp           ; scroll                ; Do we need to scroll at all?
   beq no_scroll
   dex
-  stx $02                 ; scroll
+  stx scroll zp           ; scroll
   lda #$00
   sta $2005                ; Write 0 for Horiz. Scroll value
   stx $2005                ; Write the value of 'scroll' for Vert. Scroll value
@@ -407,7 +416,7 @@ bg:
 
 
 ;;;;
-;  This is CHR-ROM page 1, which starts at 0x0000, but I'm skipping the first bit because
+;  This is CHR-ROM bank 0, which starts at 0x0000, but I'm skipping the first $0200 because
 ;  the first bunch of ASCII characters are not represented. This is the commodore 64's 
 ;  character ROM.  
 .segment char 0

@@ -12,6 +12,7 @@ module Assembler6502
     class UnresolvedSymbols < StandardError; end
     class InvalidAddressingMode < StandardError; end
     class AddressOutOfRange < StandardError; end
+    class ArgumentTooLarge < StandardError; end
 
     Mnemonic  = '([A-Za-z]{3})'
     Hex8      = '\$([A-Fa-f0-9]{2})'
@@ -46,19 +47,22 @@ module Assembler6502
       :zero_page => {
         :example     => 'AAA $FF',
         :display     => '%s $%.2X',
-        :regex       => /^#{Mnemonic}\s+#{Hex8}$/
+        :regex       => /^#{Mnemonic}\s+#{Hex8}$/,
+        :regex_label => /^#{Mnemonic}\s+#{Sym}\s+zp$/
       },
 
       :zero_page_x => {
         :example     => 'AAA $FF, X',
         :display     => '%s $%.2X, X',
-        :regex       => /^#{Mnemonic}\s+#{Hex8}\s?,\s?#{XReg}$/
+        :regex       => /^#{Mnemonic}\s+#{Hex8}\s?,\s?#{XReg}$/,
+        :regex_label => /^#{Mnemonic}\s+#{Sym}\s?,\s?#{XReg}\s+zp$/
       },
 
       :zero_page_y => {
         :example     => 'AAA $FF, Y',
         :display     => '%s $%.2X, Y',
-        :regex       => /^#{Mnemonic}\s+#{Hex8}\s?,\s?#{YReg}$/
+        :regex       => /^#{Mnemonic}\s+#{Hex8}\s?,\s?#{YReg}$/,
+        :regex_label => /^#{Mnemonic}\s+#{Sym}\s?,\s?#{YReg} zp$/
       },
 
       :absolute => {
@@ -188,6 +192,13 @@ module Assembler6502
 
 
     ####
+    ##  Return if this instruction is a zero page instruction
+    def zero_page_instruction?
+      [:zero_page, :zero_page_x, :zero_page_y].include?(@mode)
+    end
+
+
+    ####
     ##  Execute writes the emitted bytes to virtual memory, and updates PC
     ##  If there is a symbolic argument, we can try to resolve it now, or
     ##  promise to resolve it later.
@@ -248,6 +259,9 @@ module Assembler6502
       when 1
         [@hex]
       when 2
+        if zero_page_instruction? && @arg < 0 || @arg > 0xff
+          fail(ArgumentTooLarge, "For #{@op} in #{@mode} mode, only 8-bit values are allowed")
+        end
         [@hex, @arg]
       when 3
         [@hex] + break_16(@arg)
@@ -255,45 +269,6 @@ module Assembler6502
         fail("Can't handle instructions > 3 bytes")
       end
     end
-
-
-
-    ####
-    ##  Resolve symbols
-=begin
-    def resolve_symbols(symbols)
-      if unresolved_symbols?
-        if symbols[@arg].nil?
-          fail(SyntaxError, "Unknown symbol #{@arg.inspect}")
-        end
-
-        ##  It is possible to resolve a symbol to a 16-bit address and then
-        ##  use byte_selector to select the msb or lsb
-        unless @byte_selector.nil?
-          arg_16 = symbols[@arg].address
-          @arg = case @byte_selector
-          when :>
-            high_byte(arg_16)
-          when :<
-            low_byte(arg_16)
-          end
-          return @arg
-        end
-
-        ##  Based on this instructions length, we should resolve the address
-        ##  to either an absolute one, or a relative one.  The only relative addresses
-        ##  are the branching ones, which are 2 bytes in size, hence the extra 2 byte difference
-        case @length
-        when 2
-          @arg = symbols[@arg].address - @address - 2
-        when 3
-          @arg = symbols[@arg].address
-        else
-          fail(SyntaxError, "Probably can't use symbol #{@arg.inspect} with #{@op}")
-        end
-      end
-    end
-=end
 
 
     ####

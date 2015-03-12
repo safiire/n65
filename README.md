@@ -42,8 +42,8 @@ An NES assembler for the 6502 microprocessor written in Ruby
 
   I hoped to make writing NES libraries more effective since you can basically
   namespace your symbols into your own file and not mess with anyone 
-  else's code.  I also have a feeling that this will have some use in
-  creating in memory data structures similar to a C struct in the future.
+  else's code.  I also have also been able to use this to create C style 
+  structs in the memory layout, ie `sprite.x`.
 
   The assembler does two passes over your code, any symbols that are used
   which it hasn't seen the definition for yet return a "promise", that 
@@ -60,22 +60,9 @@ An NES assembler for the 6502 microprocessor written in Ruby
 
   ![Scrolling NES Demo](github_images/assembler_demo.png)
 
-  Some Todos:
-  - Get an NSF file playing
-  - I may make this into a Rubygem
-  - Maybe I can put some better error messages.
-  - I would like to add some Macros to generate settings for
-    the PPU and APU, (values for locations like $2000 and $2001,
-    the $4000s, etc.)  Put into a library.
-  - Support binary literals ie %10101010
-  - Give this project a better name.
-  - Create an interactive read eval compile loop?
-  - Add scoping directives
-  - Add struct directive
-  - Add macro/symbol define directive, name memory
-  - Make an interactive mode
-
- Some new additions:
+# Some new additions:
+  - C Style in memory structs using .scope and .space directives
+  - Explicit usage of zero page instructions with the zp suffix
   - Split the Parser into its own class
   - New MemorySpace class
   - Rewrote the Assembler class
@@ -83,6 +70,7 @@ An NES assembler for the 6502 microprocessor written in Ruby
   - Rewrote all directive's classes
   - Split the assembler from the commandline front-end 
   - Scoped Symbol Table
+  - Anonymous Scopes
   - Lower case mnemonics and hex digits
   - Ported NES101 tutor to this assembler.
   - Added msb and lsb byte selectors on address labels
@@ -92,9 +80,21 @@ An NES assembler for the 6502 microprocessor written in Ruby
   - added .incbin directive
   - added .ascii directive
   - added .segment directive
+  - added .scope directive
+  - added .space directive
   - Invented my own iNES header directive that is JSON
   - Split the project up into separate files per class
   - Wrote some more unit tests
   - Added OptionParser for commandline opts
   - Tested a ROM with Sound output
   - Tested a ROM that changes background color
+
+# Some Todos:
+  - Support binary %10101010 addresses and literals
+  - Create a library which names important NES addresses
+  - Make macros that can be used interchangably inline or as a subroutine
+  - Create a library for common operations, DMA, sound, etc both inline and subroutine options
+  - Give this project a better name.
+  - Create an interactive read eval compile loop?
+  - Make an interactive mode
+
