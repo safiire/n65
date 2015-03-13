@@ -140,8 +140,6 @@
   sta nes.apu.channel_enable
   lda #$00
   sta nes.apu.square1.reg2
-  lda #$40
-  sta nes.controller2          ;  Why are we doing this to controller 2?  Mistake?
   rts
 .
 
@@ -204,7 +202,7 @@
   lda #$00
   sta nes.ppu.address
   loop:
-    lda ($10), Y
+    lda ($10), y
     sta nes.ppu.data
     iny
     bne loop
