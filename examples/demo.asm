@@ -11,7 +11,7 @@
 
 
 ;;;;
-;  Include all the symbols in the nes scope
+;  Include all the symbols in the nes library
 .inc <nes.sym>
 
 
