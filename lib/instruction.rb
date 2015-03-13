@@ -227,6 +227,8 @@ module Assembler6502
         assembler.write_memory(emit_bytes)
       when String
         begin
+          ##  This is a bug, I don't believe it will ever get here.
+          ##  I think it always resolves every symbol later.
           promise.call
         rescue SymbolTable::UndefinedSymbol
           placeholder = [@hex, 0xDE, 0xAD][0...@length]
