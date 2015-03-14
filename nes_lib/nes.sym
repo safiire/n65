@@ -1,65 +1,101 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;  Let's start a little library for naming parts of memory in the NES
-;  We can move this to a separate library file later.
 ;  
 ;  Including this file will not emit any instructions or data into your binary
 ;  It only defines symbols in the symbol table to name memory addresses
 ;
 ;  Author: Saf Allen 2015
+;  I picked up some extra register names for mappers etc here:
+;  http://wiki.nesdev.com/w/index.php/Registers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 .org $0000
 .scope nes
   .scope ppu
     .org $2000
-    .space control1 1             ;  Control registers 1 and 2
-    .space control2 1
-    .space status 1               ;  PPU status
-    .space sprite_address 1     ;  Sprite memory address
-    .space sprite_data 1        ;  Sprite memory data
-    .space scroll 1             ;  Background scroll
-    .space address 1              ;  Indexing into PPU memory address
-    .space data 1                 ;  Read or write to PPU memory location through this register
+    .space control1 1                             ; $2000
+    .space control2 1                             ; $2001
+    .space status 1                               ; $2002
+  .
+  .scope sprite
+    .space address 1                              ; $2003
+    .space io 1                                   ; $2004
     .org $4014
-    .space sprite_dma 1           ;  DMA access to sprite memory
+    .space dma 1                                  ; $4014
+  .
+  .scope vram
+    .org $2005
+    .space address1 1                             ; $2005
+    .space address2 1                             ; $2006
+    .space io 1                                   ; $2007
   .
 
+  ;  Now let's do the APU registers
   .org $4000
   .scope apu
-    .scope square1                ;  Control of Square 1
-      .space reg1 1
-      .space reg2 1
-      .space reg3 1
-      .space reg4 1
+    .scope pulse1
+      .space control 1                             ; $4000
+      .space ramp_control 1                        ; $4001
+      .space ft 1                                  ; $4002
+      .space ct 1                                  ; $4003
     .
-    .scope square2                ;  Control of Square 2
-      .space reg1 1
-      .space reg2 1
-      .space reg3 1
-      .space reg4 1
+    .scope pulse2
+      .space control 1                             ; $4004
+      .space ramp_control 1                        ; $4005
+      .space ft 1                                  ; $4006
+      .space ct 1                                  ; $4007
     .
-    .scope triangle                ;  Control of Triangle
-      .space reg1 1
-      .space reg2 1
-      .space reg3 1
-      .space reg4 1
+    .scope triangle
+      .space control1 1                            ; $4008
+      .space control2 1                            ; $4009
+      .space freq1 1                               ; $400A
+      .space freq2 1                               ; $400B
     .
-    .scope noise                ;  Control of Noise
-      .space reg1 1
-      .space reg2 1
-      .space reg3 1
-      .space reg4 1
+    .scope noise
+      .space control1 1                            ; $400C
+      .space control2 1                            ; $400D
+      .space freq1 1                               ; $400E
+      .space freq2 1                               ; $400F
     .
-    .scope dmc                  ;  Control of DMC
-      .space reg1 1
-      .space reg2 1
-      .space reg3 1
-      .space reg4 1
+    .scope dmc
+      .space control 1                             ; $4010
+      .space da 1                                  ; $4011
+      .space address 1                             ; $4012
+      .space dl 1                                  ; $4013
     .
     .org $4015
-    .space channel_enable 1      ;  Enable or disble channels
+    .space channel_enable 1                        ; $4015
   .
   .org $4016
-  .space controller1 1           ;  Player 1 joystick
-  .space controller2 1           ;  Player 2 joystick
+  .space controller1 1                             ; $4016
+  .space controller2 1                             ; $4017
+  .scope mapper
+    .org $8000
+    .space unrom 1                                 
+    .org $8000
+    .space cnrom 1
+    .org $8000
+    .space mmc1_control 1
+    .org $A000
+    .space mmc1_vrom_low 1
+    .org $C000
+    .space mmc1_vrom_high 1
+    .org $E000
+    .space mmc1_prog 1
+    .org $8000
+    .space mmc3_command 1
+    .space mmc3_page 1
+    .org $A000
+    .space mmc3_mirror 1
+    .space mmc3_sram 1
+    .org $C000
+    .space mmc3_clock 1
+    .space mmc3_latch 1
+    .org $E000
+    .space mmc3_clock_off 1
+    .space mmc3_clock_on 1
+  .
 .
+
+; Let's put PC back somewhere sane
+.org $0000

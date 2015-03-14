@@ -139,7 +139,7 @@
   lda #$01
   sta nes.apu.channel_enable
   lda #$00
-  sta nes.apu.square1.reg2
+  sta nes.apu.pulse1.ramp_control
   rts
 .
 
@@ -175,11 +175,11 @@
 .scope load_palette
   lda #$3F
   ldx #$00
-  sta nes.ppu.address
-  stx nes.ppu.address
+  sta nes.vram.address2
+  stx nes.vram.address2
   loop:
     lda palette, x
-    sta nes.ppu.data
+    sta nes.vram.io
     inx
     cpx #$20
     bne loop
@@ -198,12 +198,12 @@
   lda #>bg
   sta $11
   lda #$24
-  sta nes.ppu.address
+  sta nes.vram.address2
   lda #$00
-  sta nes.ppu.address
+  sta nes.vram.address2
   loop:
     lda ($10), y
-    sta nes.ppu.data
+    sta nes.vram.io
     iny
     bne loop
     inc $11
@@ -217,7 +217,7 @@
   lda #$00
   .scope
     loop:
-      sta nes.ppu.data
+      sta nes.vram.io
       iny
       bne loop
       dex
@@ -241,7 +241,7 @@
 ;  Update the sprite, I don't exactly understand the DMA call yet.
 update_sprite:
   lda #>sprite
-  sta nes.ppu.sprite_dma           ; Jam page $200-$2FF into SPR-RAM, how do we get these numbers?
+  sta nes.sprite.dma           ; Jam page $200-$2FF into SPR-RAM, how do we get these numbers?
   lda sprite.x             
   beq hit_left
   cmp #$F7
@@ -324,16 +324,16 @@ reverse_dx:
 ;  Scroll the screen if we have to
 scroll_screen:
   ldx #$00                ; Reset VRAM Address to $0000
-  stx nes.ppu.address
-  stx nes.ppu.address
+  stx nes.vram.address2
+  stx nes.vram.address2
 
   ldx scroll zp           ; Do we need to scroll at all?
   beq no_scroll
   dex
   stx scroll zp           
   lda #$00
-  sta nes.ppu.scroll  ; Write 0 for Horiz. Scroll value
-  stx nes.ppu.scroll  ; Write the value of 'scroll' for Vert. Scroll value
+  sta nes.vram.address1  ; Write 0 for Horiz. Scroll value
+  stx nes.vram.address1  ; Write the value of 'scroll' for Vert. Scroll value
 
 no_scroll:
   rts
@@ -344,11 +344,11 @@ no_scroll:
 low_c:
   pha
   lda #$84
-  sta nes.apu.square1.reg1
+  sta nes.apu.pulse1.control
   lda #$AA
-  sta nes.apu.square1.reg3
+  sta nes.apu.pulse1.ft
   lda #$09
-  sta nes.apu.square1.reg4
+  sta nes.apu.pulse1.ct
   pla
   rts
 
@@ -358,11 +358,11 @@ low_c:
 high_c:
   pha
   lda #$86
-  sta nes.apu.square1.reg1
+  sta nes.apu.pulse1.control
   lda #$69
-  sta nes.apu.square1.reg3
+  sta nes.apu.pulse1.ft
   lda #$08
-  sta nes.apu.square1.reg4
+  sta nes.apu.pulse1.ct
   pla
   rts
 

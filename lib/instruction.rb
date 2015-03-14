@@ -17,7 +17,7 @@ module Assembler6502
     Mnemonic  = '([A-Za-z]{3})'
     Hex8      = '\$([A-Fa-f0-9]{2})'
     Hex16     = '\$([A-Fa-f0-9]{4})'
-    Immediate = '\#\$([0-9A-F]{2})'
+    Immediate = '\#\$([0-9A-Fa-f]{2})'
     Sym       = '([a-zZ-Z_][a-zA-Z0-9_\.]+)'
     Branches  = '(BPL|BMI|BVC|BVS|BCC|BCS|BNE|BEQ|bpl|bmi|bvc|bvs|bcc|bcs|bne|beq)'
     XReg      = '[Xx]'
