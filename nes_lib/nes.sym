@@ -16,17 +16,19 @@
     .space control1 1                             ; $2000
     .space control2 1                             ; $2001
     .space status 1                               ; $2002
+    .org $2005
+    .space scroll 1                               ; $2005
   .
+  .org $2003
   .scope sprite
     .space address 1                              ; $2003
     .space io 1                                   ; $2004
     .org $4014
     .space dma 1                                  ; $4014
   .
+  .org $2006
   .scope vram
-    .org $2005
-    .space address1 1                             ; $2005
-    .space address2 1                             ; $2006
+    .space address 1                              ; $2006
     .space io 1                                   ; $2007
   .
 

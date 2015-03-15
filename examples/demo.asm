@@ -175,8 +175,8 @@
 .scope load_palette
   lda #$3F
   ldx #$00
-  sta nes.vram.address2
-  stx nes.vram.address2
+  sta nes.vram.address
+  stx nes.vram.address
   loop:
     lda palette, x
     sta nes.vram.io
@@ -198,9 +198,9 @@
   lda #>bg
   sta $11
   lda #$24
-  sta nes.vram.address2
+  sta nes.vram.address
   lda #$00
-  sta nes.vram.address2
+  sta nes.vram.address
   loop:
     lda ($10), y
     sta nes.vram.io
@@ -324,16 +324,16 @@ reverse_dx:
 ;  Scroll the screen if we have to
 scroll_screen:
   ldx #$00                ; Reset VRAM Address to $0000
-  stx nes.vram.address2
-  stx nes.vram.address2
+  stx nes.vram.address
+  stx nes.vram.address
 
   ldx scroll zp           ; Do we need to scroll at all?
   beq no_scroll
   dex
   stx scroll zp           
   lda #$00
-  sta nes.vram.address1  ; Write 0 for Horiz. Scroll value
-  stx nes.vram.address1  ; Write the value of 'scroll' for Vert. Scroll value
+  sta nes.ppu.scroll  ; Write 0 for Horiz. Scroll value
+  stx nes.ppu.scroll  ; Write the value of 'scroll' for Vert. Scroll value
 
 no_scroll:
   rts
