@@ -390,14 +390,21 @@ irq:
 
 
 ;;;;
-; Palette data stored in the PROG section, to be copied later
+;  Palette data stored in the PROG section, to be copied later
+;  There are four groups of four colors.  The first line is tile colors
+;  and the second line is sprite colors.  These are combined with the attribute
+;  table to create the final color on screen.  I have a feeling this is a bit
+;  wrong, as every 4th color should be the same, because it is ultimately wired 
+;  to the same memory address, and represents the transparent background color.
+;  I will look into this.
 palette:
 .bytes $0E,$00,$0E,$19,$00,$00,$00,$00,$00,$00,$00,$00,$01,$00,$01,$21
 .bytes $0E,$20,$22,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 
 
 ;;;;
-; Background data stored in the PROG section to be copied later
+;  Background data stored in the PROG section to be copied later
+;  See below where the tile numbers are mapped to ASCII values
 bg:
 .ascii "                                "
 .ascii "                                "
@@ -432,22 +439,31 @@ bg:
 
 
 ;;;;
-; Attribute table, this is basically the tilemap
-.bytes $00,$00,$00,$00,$00,$00,$00,$00,
-.bytes $00,$00,$FF,$FF,$FF,$00,$00,$00,
-.bytes $00,$00,$FF,$FF,$FF,$00,$00,$00,
-.bytes $00,$00,$FF,$FF,$FF,$00,$00,$00,
-.bytes $00,$00,$FF,$FF,$FF,$00,$00,$00,
-.bytes $00,$00,$FF,$FF,$FF,$00,$00,$00,
-.bytes $00,$00,$FF,$FF,$FF,$00,$00,$00,
-.bytes $00,$00,$00,$00,$00,$00,$00,$00,
+;  Attribute table:
+;  The tiles on the screen are 8x8 pixels, but every 2x2 group of tiles shares
+;  4 bits of color information (and 4 bits of something else) with the tiles.
+;  When combined you get the final colors for the tiles.  That is why this is 8x8 bytes
+.bytes $00,$00,$00,$00,$00,$00,$00,$00
+.bytes $00,$00,$FF,$FF,$FF,$00,$00,$00
+.bytes $00,$00,$FF,$FF,$FF,$00,$00,$00
+.bytes $00,$00,$FF,$FF,$FF,$00,$00,$00
+.bytes $00,$00,$FF,$FF,$FF,$00,$00,$00
+.bytes $00,$00,$FF,$FF,$FF,$00,$00,$00
+.bytes $00,$00,$FF,$FF,$FF,$00,$00,$00
+.bytes $00,$00,$00,$00,$00,$00,$00,$00
 
 
 
 ;;;;
-;  This is CHR-ROM bank 0, which starts at 0x0000, but I'm skipping the first $0200 because
-;  the first bunch of ASCII characters are not represented. This is the commodore 64's 
-;  character ROM.  
+;  This begins the char ROM bank 0, which in mapper 0 spans from $0000 - $1FFF (8KB)
+;  The PPU has direct access to the contents of char ROM.  
+;  The first 4KB from $0000 - $0FFF is tile data, and the second 4KB is sprite data
+;
+;  The first $200 bytes are skipped to align the tile values to their ASCII 
+;  values, so char 32 in ASCII is space, 33 is !, and so on.
+;
+;  This tileset is from the commodore64's character ROM.
+;  Bytes 0-$0FFF, that is 4096 bytes, is tile data.
 .segment char 0
 .org $0200
 
@@ -518,7 +534,10 @@ bg:
 
 
 ;;;;
-;  Here is sprite data on CHAR ROM page 2
+;  Here we are still in char ROM bank 0, $1000 = 4096, so the next 4KB
+;  is sprite tile data.  Char ROM banks in mapper 0 are 8KB split half
+;  and half between tile and sprite data.  We only have two sprites, but
+;  we have to move ahead to $1000 where sprite data begins.
 .org $1000
 
 .bytes $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; Character 0: Blank

@@ -237,8 +237,8 @@ background:
 
 
 ;;;;
-;  Here is my character (tile) data
+;  Here we include an entire binary char rom from Mario 2, which contains 4KB of tile data
+;  No spirte data is included.
 .segment char 0
 .org $0000
 .incbin "mario2.char"
-
