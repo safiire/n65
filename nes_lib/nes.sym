@@ -7,6 +7,8 @@
 ;  Author: Saf Allen 2015
 ;  I picked up some extra register names for mappers etc here:
 ;  http://wiki.nesdev.com/w/index.php/Registers
+;  Some different common names from here:
+;  http://wiki.nesdev.com/w/index.php/PPU_registers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 .org $0000
@@ -20,7 +22,7 @@
     .space scroll 1                               ; $2005
   .
   .org $2003
-  .scope sprite
+  .scope oam
     .space address 1                              ; $2003
     .space io 1                                   ; $2004
     .org $4014

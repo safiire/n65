@@ -257,7 +257,7 @@
 ;  Update the sprite, I don't exactly understand the DMA call yet.
 .scope update_sprite
   lda #>sprite
-  sta nes.sprite.dma           ; Jam page $200-$2FF into SPR-RAM, how do we get these numbers?
+  sta nes.oam.dma           ; Jam page $200-$2FF into SPR-RAM, how do we get these numbers?
   lda sprite.x             
   beq hit_left
   cmp #$F7
