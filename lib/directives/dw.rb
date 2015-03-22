@@ -43,17 +43,12 @@ module Assembler6502
     ##  This is a little complicated, I admit.
     def exec(assembler)
 
-      ##  Save these current values into the closure
-      pc = assembler.program_counter
-      segment = assembler.current_segment
-      bank = assembler.current_bank
-
-      ##  Create a promise, if this symbol is not defined yet.
-      promise = lambda do 
-        value = assembler.symbol_table.resolve_symbol(@value)
+      promise = assembler.with_saved_state do |saved_assembler|
+        value = saved_assembler.symbol_table.resolve_symbol(@value)
         bytes = [value & 0xFFFF].pack('S').bytes
-        assembler.write_memory(bytes, pc, segment, bank)
+        saved_assembler.write_memory(bytes)
       end
+
 
       ##  Try to execute it now, or setup the promise to return
       case @value
@@ -66,7 +61,7 @@ module Assembler6502
         rescue SymbolTable::UndefinedSymbol
           ##  Must still advance PC before returning promise, so we'll write
           ##  a place holder value of 0xDEAD
-          assembler.write_memory([0xDE, 0xAD], pc, segment, bank)
+          assembler.write_memory([0xDE, 0xAD])
           return promise
         end
       else

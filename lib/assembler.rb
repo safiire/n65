@@ -68,6 +68,23 @@ module Assembler6502
 
 
     ####
+    ##  Return an object that contains the assembler's current state
+    def get_current_state
+      saved_program_counter, saved_segment, saved_bank = @program_counter, @current_segment, @current_bank
+      saved_scope = symbol_table.scope_stack.dup
+      OpenStruct.new(program_counter: saved_program_counter, segment: saved_segment, bank: saved_bank, scope: saved_scope)
+    end
+
+
+    ####
+    ##  Set the current state from an OpenStruct
+    def set_current_state(struct)
+      @program_counter, @current_segment, @current_bank = struct.program_counter, struct.segment, struct.bank
+      symbol_table.scope_stack = struct.scope.dup
+    end
+
+
+    ####
     ##  This is the main assemble method, it parses one line into an object
     ##  which when given a reference to this assembler, controls the assembler
     ##  itself through public methods, executing assembler directives, and 
@@ -91,6 +108,23 @@ module Assembler6502
     def fulfill_promises
       while promise = @promises.pop
         promise.call
+      end
+    end
+
+
+    ####
+    ##  This rewinds the state of the assembler, so a promise can be 
+    ##  executed with a previous state, for example if we can't resolve
+    ##  a symbol right now, and want to try during the second pass
+    def with_saved_state(&block)
+      ##  Save the current state of the assembler
+      old_state = get_current_state
+
+      lambda do
+
+        ##  Set the assembler state back to the old state and run the block like that
+        set_current_state(old_state)
+        block.call(self)
       end
     end
 

@@ -1,7 +1,9 @@
+require 'pry-byebug'
 
 module Assembler6502
 
   class SymbolTable
+    attr_accessor :scope_stack
 
     #####  Custom Exceptions
     class InvalidScope < StandardError; end
@@ -54,6 +56,7 @@ module Assembler6502
     end
 
 
+=begin
     ####
     ##  Resolve symbol to a value, for example:
     ##  scope1.scope2.variable
@@ -61,7 +64,7 @@ module Assembler6502
     ##  You can just address anything by name in the current scope
     ##  To go backwards in scope you need to write the full path
     ##  like global.sprite.x or whatever
-    def resolve_symbol(name)
+    def resolve_symbol_old(name)
 
       value = if name.include?('.')
         path_ary = name.split('.').map(&:to_sym)
@@ -84,6 +87,57 @@ module Assembler6502
         fail(UndefinedSymbol, name)
       end
       value
+    end
+=end
+
+
+    ####
+    ##  
+    def resolve_symbol(name)
+      method = name.include?('.') ? :resolve_symbol_dot_syntax : :resolve_symbol_scoped
+      value = self.send(method, name)
+
+      fail(UndefinedSymbol, name) if value.nil?
+      value
+    end
+
+
+    ####
+    ##  Resolve symbol by working backwards through each
+    ##  containing scope.  Similarly named scopes shadow outer scopes
+    def resolve_symbol_scoped(name)
+      root = "-#{name}".to_sym
+      stack = @scope_stack.dup
+      loop do
+        scope = retreive_scope(stack)
+
+        ##  We see if there is a key either under this name, or root
+        v = scope[name.to_sym] || scope[root]
+        v = v.kind_of?(Hash) ? v[root] : v
+
+        return v unless v.nil?
+
+        ##  Pop the stack so we can decend to the parent scope, if any
+        stack.pop
+        return nil if stack.empty?
+      end
+    end
+
+
+    ####
+    ##  Dot syntax means to check an absolute path to the symbol
+    ##  :global is ignored if it is provided as part of the path
+    def resolve_symbol_dot_syntax(name)
+      path_ary = name.split('.').map(&:to_sym)
+      symbol = path_ary.pop
+      root = "-#{symbol}".to_sym
+      path_ary.shift if path_ary.first == :global
+
+      scope = retreive_scope(path_ary)
+
+      ##  We see if there is a key either under this name, or root
+      v = scope[symbol]
+      v.kind_of?(Hash) ? v[root] : v
     end
 
 

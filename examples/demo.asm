@@ -239,7 +239,7 @@
 
 ;;;;
 ;  Update the sprite, I don't exactly understand the DMA call yet.
-update_sprite:
+.scope update_sprite
   lda #>sprite
   sta nes.sprite.dma           ; Jam page $200-$2FF into SPR-RAM, how do we get these numbers?
   lda sprite.x             
@@ -262,11 +262,12 @@ update_sprite:
     adc dx zp  
     sta sprite.x            
   rts
+.
 
 
 ;;;;
 ;  Read the first controller, and handle input
-react_to_input:
+.scope react_to_input
   lda #$01                ; strobe joypad
   sta nes.controller1
   lda #$00
@@ -306,11 +307,12 @@ react_to_input:
     stx sprite.y
   not_dn: 
   rts                         ; Ignore left and right
+.
 
 
 ;;;;
 ;  XORing with $ff toggles between 0x1 and 0xfe (-1)
-reverse_dx:
+.scope reverse_dx
   lda #$FF
   eor dx zp
   clc
@@ -318,30 +320,32 @@ reverse_dx:
   sta dx zp
   jsr low_c        ; Play the reverse low C note
   rts
+.
 
 
 ;;;;
 ;  Scroll the screen if we have to
-scroll_screen:
+.scope scroll_screen
   ldx #$00                ; Reset VRAM Address to $0000
   stx nes.vram.address
   stx nes.vram.address
 
   ldx scroll zp           ; Do we need to scroll at all?
-  beq no_scroll
+  beq return
   dex
   stx scroll zp           
   lda #$00
   sta nes.ppu.scroll  ; Write 0 for Horiz. Scroll value
   stx nes.ppu.scroll  ; Write the value of 'scroll' for Vert. Scroll value
 
-no_scroll:
+  return:
   rts
+.
 
   
 ;;;;
 ;  Play a low C note on square 1
-low_c:
+.scope low_c
   pha
   lda #$84
   sta nes.apu.pulse1.control
@@ -351,11 +355,12 @@ low_c:
   sta nes.apu.pulse1.ct
   pla
   rts
+.
 
 
 ;;;;
 ;  Play a high C note on square 1
-high_c:
+.scope high_c
   pha
   lda #$86
   sta nes.apu.pulse1.control
@@ -365,15 +370,17 @@ high_c:
   sta nes.apu.pulse1.ct
   pla
   rts
+.
 
 
 ;;;;
 ;  Update everything on every vblank
-vblank: 
+.scope vblank
   jsr scroll_screen
   jsr update_sprite
   jsr react_to_input
   rti
+.
 
 
 ;;;;

@@ -1,9 +1,9 @@
-  ;  Create an iNES header
-  .ines {"prog": 1, "char": 0, "mapper": 0, "mirror": 1}
+;  Create an iNES header
+.ines {"prog": 1, "char": 0, "mapper": 0, "mirror": 1}
 
   ;  Here is the start of our code
-  .org $C000
-start:
+.org $C000
+.scope main
   LDA #$01	; square 1
   STA $4015
   LDA #$F8	; period low
@@ -12,13 +12,13 @@ start:
   STA $4003
   LDA #$BF	; volume
   STA $4000
-forever:
-  JMP forever
+  forever:
+    JMP forever
 
-nmi:
+nothing:
   RTI
 
   .org $FFFA     ;  Here are the three interrupt vectors
-  .dw  nmi       ;  VBlank non-maskable interrupt
-  .dw  start     ;  When the processor is reset or powers on
-  .dw  $0        ;  External interrupt IRQ
+  .dw  nothing   ;  VBlank non-maskable interrupt
+  .dw  main      ;  When the processor is reset or powers on
+  .dw  nothing   ;  External interrupt IRQ

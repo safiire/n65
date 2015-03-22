@@ -9,13 +9,6 @@
 ;  Create an iNES header
 .ines {"prog": 1, "char": 0, "mapper": 0, "mirror": 0}
 
-;;;;
-;  Here is a good spot to associate zero page memory addresses
-;  with quick access variables in the program.
-
-.org $0200
-sprite:
-
 
 ;;;;
 ;  Setup the interrupt vectors
@@ -28,7 +21,7 @@ sprite:
 .org $C000
 ;;;;
 ;  Here is our code entry point, which we'll call main.
-main:
+.scope main
   ;  Disable interrupts and decimal flag
   sei
 	cld
@@ -85,15 +78,16 @@ main:
 	cli
   forever:
     jmp forever
+.
 
 
 ;;;;
 ;  Update everything on every vblank
-vblank: 
+vblank:
   rti
 
 
 ;;;;
 ;  Don't do anything on IRQ
-irq:    
+irq:
   rti

@@ -29,6 +29,34 @@ class TestSymbolTable < MiniTest::Test
 
 
   ####
+  ##  Access something from an outer scope without dot syntax
+  def test_outer_scope
+    st = SymbolTable.new
+    st.enter_scope('outer')
+    st.define_symbol('dog', 'woof')
+    st.enter_scope('inner')
+    st.define_symbol('pig', 'oink')
+    assert_equal('woof', st.resolve_symbol('dog'))
+  end
+
+
+  ####
+  ##  Access something from an outer scope without dot syntax
+  def test_shadow
+    st = SymbolTable.new
+    st.enter_scope('outer')
+    st.define_symbol('dog', 'woof')
+    st.enter_scope('inner')
+    st.define_symbol('dog', 'bark')
+    assert_equal('bark', st.resolve_symbol('dog'))
+    assert_equal('woof', st.resolve_symbol('outer.dog'))
+    st.exit_scope
+    st.exit_scope
+    assert_equal('bark', st.resolve_symbol('outer.inner.dog'))
+  end
+
+
+  ####
   ##  Test exiting a sub scope, and seeing that the variable is unavailable by simple name
   def test_exit_scope
     st = SymbolTable.new
@@ -151,6 +179,59 @@ class TestSymbolTable < MiniTest::Test
     end
     assembler.fulfill_promises
     assert_equal(0x8000, assembler.symbol_table.resolve_symbol('global.main'))
+  end
+
+
+  ####
+  ##  Fix a bug where we can't see a forward declared symbol in a scope
+  def test_foward_declaration_in_scope
+    program = <<-ASM
+    ;;;;
+    ;  Create an iNES header
+    .ines {"prog": 1, "char": 0, "mapper": 0, "mirror": 0}
+
+    ;;;;
+    ;  Try to expose a problem we have with scopes
+    ;  We don't seem to be able to branch to a forward
+    ;  declared symbol within a scope
+    .org $8000
+    .scope main
+      sei
+      cld
+      lda #\$00
+      bne forward_symbol
+      nop
+      nop
+      nop
+      forward_symbol:
+      rts
+    .
+    ASM
+
+    ####  There really should be an evaluate string method
+    assembler = Assembler.new
+    program.split(/\n/).each do |line|
+      assembler.assemble_one_line(line)
+    end
+    puts YAML.dump(assembler.symbol_table)
+    assembler.fulfill_promises
+
+    ####  The forward symbol should have been resolved to +3, and the ROM should look like this:
+    correct_rom = [0x4e, 0x45, 0x53, 0x1a, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                   0x78,        # SEI
+                   0xd8,        # CLD
+                   0xa9, 0x0,   # LDA immediate 0
+                   0xd0, 0x3,   # BNE +3
+                   0xea,        # NOP
+                   0xea,        # NOP
+                   0xea,        # NOP
+                   0x60         # RTS forward_symbol
+    ]
+
+    ####  Grab the first 26 bytes of the rom and make sure they assemble to the above
+    emitted_rom = assembler.emit_binary_rom.bytes[0...26]
+    assert_equal(correct_rom, emitted_rom)
+    ####  Yup it is fixed now.
   end
 
 end

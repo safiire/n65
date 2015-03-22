@@ -147,7 +147,6 @@ module Assembler6502
               if match_array.size == 4
                 _, op, byte_selector, arg = match_array
                 return Instruction.new(op, arg, mode, byte_selector.to_sym)
-                puts "I found one with #{byte_selector} #{arg}"
               else
                 _, op, arg = match_array
                 return Instruction.new(op, arg, mode)
@@ -204,22 +203,16 @@ module Assembler6502
     ##  promise to resolve it later.
     def exec(assembler)
 
-      ##  Save these current values into the closure/promise
-      pc = assembler.program_counter
-      segment = assembler.current_segment
-      bank = assembler.current_bank
-
-      ##  Create a promise if this symbol is not defined yet.
-      promise = lambda do 
-        @arg = assembler.symbol_table.resolve_symbol(@arg)
+      promise = assembler.with_saved_state do |saved_assembler|
+        @arg = saved_assembler.symbol_table.resolve_symbol(@arg)
 
         ##  If the instruction uses a byte selector, we need to apply that.
         @arg = apply_byte_selector(@byte_selector, @arg)
 
         ##  If the instruction is relative we need to work out how far away it is
-        @arg = @arg - pc - 2 if @mode == :relative
+        @arg = @arg - saved_assembler.program_counter - 2 if @mode == :relative
 
-        assembler.write_memory(emit_bytes, pc, segment, bank)
+        saved_assembler.write_memory(emit_bytes)
       end
 
       case @arg
@@ -234,7 +227,7 @@ module Assembler6502
           placeholder = [@hex, 0xDE, 0xAD][0...@length]
           ##  I still have to write a placeholder instruction of the right
           ##  length.  The promise will come back and resolve the address.
-          assembler.write_memory(placeholder, pc, segment, bank)
+          assembler.write_memory(placeholder)
           return promise
         end
       end
