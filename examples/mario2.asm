@@ -66,8 +66,8 @@
 
   ;  Disable all graphics and vblank nmi
   lda #$00
-  sta nes.ppu.control1
-  sta nes.ppu.control2
+  sta nes.ppu.control
+  sta nes.ppu.mask
 
   ;  Call subroutines to initialize the graphics
   jsr load_palette
@@ -83,14 +83,30 @@
 
 
 ;;;;
-; Set basic PPU registers.  Load background from $0000,
-; sprites from $1000, and the name table from $2000.
-; These literals would make more sense in binary.
+; nes.ppu.control: bitpattern is VPHB SINN
+;   V:  NMI enable
+;   P:  PPU master/slave (this does nothing on the NES)
+;   H:  Sprite height 0 = 8x8, 1 = 8x16
+;   B:  Background pattern table address (0: $0000; 1: $1000)
+;   S:  Sprite pattern table address for 8x8 sprites (0: $0000; 1: $1000; ignored in 8x16 mode)
+;   I:  VRAM address increment per CPU read/write of nes.vram.io (0: add 1, going across; 1: add 32, going down)
+;   NN: Base nametable address (0 = $2000; 1 = $2400; 2 = $2800; 3 = $2C00)
+;
+;   Equivalently, bits 0 and 1 are the most significant bit of the scrolling coordinates
+;
+; nes.ppu.mask: bitpattern is BGRs bMmG
+;   BGR: Color emphasis bits
+;   s:   Sprite enable
+;   b:   Background enable
+;   M:   Background left column enable
+;   m:   Sprite left column enable
+;   G:   Greyscale
+;
 .scope init_ppu
-  lda #$88
-  sta nes.ppu.control1
-  lda #$1E
-  sta nes.ppu.control2
+  lda #%10001000         ; NMI enable, 8x8 tile, Background: $0000, Sprites: $1000, Address increment: 1, Nametable: $2000
+  sta nes.ppu.control
+  lda #%00011110         ; No color emphasis, Enable sprites, Enable Background, Enable sprite and bg left column, no greyscale
+  sta nes.ppu.mask
   rts
 .
 

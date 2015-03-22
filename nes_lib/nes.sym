@@ -13,9 +13,9 @@
 .scope nes
   .scope ppu
     .org $2000
-    .space control1 1                             ; $2000
-    .space control2 1                             ; $2001
-    .space status 1                               ; $2002
+    .space control 1                             ; $2000
+    .space mask 1                                ; $2001
+    .space status 1                              ; $2002
     .org $2005
     .space scroll 1                               ; $2005
   .

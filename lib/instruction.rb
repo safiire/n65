@@ -1,4 +1,5 @@
 require_relative 'opcodes'
+require_relative 'regexes'
 
 module Assembler6502
 
@@ -14,14 +15,8 @@ module Assembler6502
     class AddressOutOfRange < StandardError; end
     class ArgumentTooLarge < StandardError; end
 
-    Mnemonic  = '([A-Za-z]{3})'
-    Hex8      = '\$([A-Fa-f0-9]{2})'
-    Hex16     = '\$([A-Fa-f0-9]{4})'
-    Immediate = '\#\$([0-9A-Fa-f]{2})'
-    Sym       = '([a-zZ-Z_][a-zA-Z0-9_\.]+)'
-    Branches  = '(BPL|BMI|BVC|BVS|BCC|BCS|BNE|BEQ|bpl|bmi|bvc|bvs|bcc|bcs|bne|beq)'
-    XReg      = '[Xx]'
-    YReg      = '[Yy]'
+    ##  Include Regexes 
+    include Regexes
 
     AddressingModes = {
       :relative => {
@@ -47,63 +42,63 @@ module Assembler6502
       :zero_page => {
         :example     => 'AAA $FF',
         :display     => '%s $%.2X',
-        :regex       => /^#{Mnemonic}\s+#{Hex8}$/,
+        :regex       => /^#{Mnemonic}\s+#{Num8}$/,
         :regex_label => /^#{Mnemonic}\s+#{Sym}\s+zp$/
       },
 
       :zero_page_x => {
         :example     => 'AAA $FF, X',
         :display     => '%s $%.2X, X',
-        :regex       => /^#{Mnemonic}\s+#{Hex8}\s?,\s?#{XReg}$/,
+        :regex       => /^#{Mnemonic}\s+#{Num8}\s?,\s?#{XReg}$/,
         :regex_label => /^#{Mnemonic}\s+#{Sym}\s?,\s?#{XReg}\s+zp$/
       },
 
       :zero_page_y => {
         :example     => 'AAA $FF, Y',
         :display     => '%s $%.2X, Y',
-        :regex       => /^#{Mnemonic}\s+#{Hex8}\s?,\s?#{YReg}$/,
+        :regex       => /^#{Mnemonic}\s+#{Num8}\s?,\s?#{YReg}$/,
         :regex_label => /^#{Mnemonic}\s+#{Sym}\s?,\s?#{YReg} zp$/
       },
 
       :absolute => {
         :example     => 'AAA $FFFF',
         :display     => '%s $%.4X',
-        :regex       => /^#{Mnemonic}\s+#{Hex16}$/,
+        :regex       => /^#{Mnemonic}\s+#{Num16}$/,
         :regex_label => /^#{Mnemonic}\s+#{Sym}$/
       },
 
       :absolute_x => {
         :example     => 'AAA $FFFF, X',
         :display     => '%s $%.4X, X',
-        :regex       => /^#{Mnemonic}\s+#{Hex16}\s?,\s?#{XReg}$/,
+        :regex       => /^#{Mnemonic}\s+#{Num16}\s?,\s?#{XReg}$/,
         :regex_label => /^#{Mnemonic}\s+#{Sym}\s?,\s?#{XReg}$/
       },
 
       :absolute_y => {
         :example     => 'AAA $FFFF, Y',
         :display     => '%s $%.4X, Y',
-        :regex       => /^#{Mnemonic}\s+#{Hex16}\s?,\s?#{YReg}$/,
+        :regex       => /^#{Mnemonic}\s+#{Num16}\s?,\s?#{YReg}$/,
         :regex_label => /^#{Mnemonic}\s+#{Sym}\s?,\s?#{YReg}$/
       },
 
       :indirect => {
         :example     => 'AAA ($FFFF)',
         :display     => '%s ($%.4X)',
-        :regex       => /^#{Mnemonic}\s+\(#{Hex16}\)$/,
+        :regex       => /^#{Mnemonic}\s+\(#{Num16}\)$/,
         :regex_label => /^#{Mnemonic}\s+\(#{Sym}\)$/
       },
 
       :indirect_x => {
         :example     => 'AAA ($FF, X)',
         :display     => '%s ($%.2X, X)',
-        :regex       => /^#{Mnemonic}\s+\(#{Hex8}\s?,\s?#{XReg}\)$/,
+        :regex       => /^#{Mnemonic}\s+\(#{Num8}\s?,\s?#{XReg}\)$/,
         :regex_label => /^#{Mnemonic}\s+\(#{Sym}\s?,\s?#{XReg}\)$/
       },
 
       :indirect_y => {
         :example     => 'AAA ($FF), Y)',
         :display => '%s ($%.2X), Y',
-        :regex       => /^#{Mnemonic}\s+\(#{Hex8}\)\s?,\s?#{YReg}$/,
+        :regex       => /^#{Mnemonic}\s+\(#{Num8}\)\s?,\s?#{YReg}$/,
         :regex_label => /^#{Mnemonic}\s+\(#{Sym}\)\s?,\s?#{YReg}$/
       }
     }
@@ -123,9 +118,18 @@ module Assembler6502
         unless match_data.nil?
           ##  We must have a straight instruction without symbols, construct 
           ##  an Instruction from the match_data, and return it
-          _, op, arg = match_data.to_a
-          arg = arg.to_i(16) unless arg.nil?
-          return Instruction.new(op, arg, mode)
+          _, op, arg_hex, arg_bin = match_data.to_a
+
+          ##  Until I think of something better, it seems that the union regex
+          ##  puts a hexidecimal argument in one capture, and a binary in the next
+          ##  This is annoying, but still not as annoying as using Treetop to parse
+          if arg_hex != nil
+            return Instruction.new(op, arg_hex.to_i(16), mode)
+          elsif arg_bin != nil
+            return Instruction.new(op, arg_bin.to_i(2), mode)
+          else
+            return Instruction.new(op, nil, mode)
+          end
 
         else
           ##  Can this addressing mode even use labels?
