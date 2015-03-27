@@ -30,8 +30,8 @@ module Assembler6502
       name = name.to_sym
       scope = current_scope
       if scope.has_key?(name)
-        path_string = generate_scope_path(path_ary)
-        fail(InvalidScope, "Scope: #{path_string} already exists")
+        #path_string = generate_scope_path(path_ary)
+        fail(InvalidScope, "Scope: #{name} already exists")
       end
       scope[name] = {}
       @scope_stack.push(name)
