@@ -36,12 +36,13 @@ module Assembler6502
       assembler.fulfill_promises
       puts " Done."
 
-      ##  Let's export the symbol table to a file
-      print "Writing symbol table to #{outfile}.yaml..."
-      File.open("#{outfile}.yaml", 'w') do |fp|
-        fp.write(assembler.symbol_table.export_to_yaml)
-      end
-      puts "Done."
+      ##  Let's not export the symbol table to a file anymore
+      ##  Will add an option for this later.
+      #print "Writing symbol table to #{outfile}.yaml..."
+      #File.open("#{outfile}.yaml", 'w') do |fp|
+        #fp.write(assembler.symbol_table.export_to_yaml)
+      #end
+      #puts "Done."
 
       ##  For right now, let's just emit the first prog bank
       File.open(outfile, 'w') do |fp|
