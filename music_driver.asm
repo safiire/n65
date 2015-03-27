@@ -1,5 +1,5 @@
 ;------------------------------------------------------------------------------
-;  An NES sound engine that understands the binary stream outputted from my
+;  An NES music engine that understands the binary stream outputted from my
 ;  MIDI converter :)
 ;;;;
 ;  Create an iNES header
@@ -15,8 +15,11 @@
 ;  Let's put a data structure to control the sound engine in the zero page
 .org $0000
 .scope sound_engine
+  ;  Where we are reading from ROM
   .space stream_read_ptr_lo 1
   .space stream_read_ptr_hi 1
+
+  ;  Where we are writing in the APU
   .space stream_write_ptr_lo 1
   .space stream_write_ptr_hi 1
   .space delta 1
@@ -78,11 +81,10 @@
 
   ;  Initialize sound engine structure
   ;  To read from $D000, and to write to $40**
-  lda #$D0
+  lda #>music_buffer
   sta sound_engine.stream_read_ptr_hi
-  lda #$00
+  lda #<music_buffer
   sta sound_engine.stream_read_ptr_lo
-  sta sound_engine.stream_write_ptr_lo
 
   ; Make the first delta happen immediately
   lda #$01

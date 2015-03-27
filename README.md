@@ -74,7 +74,7 @@ An NES assembler for the 6502 microprocessor written in Ruby
   on the NES.
 
 
-  ![Scrolling NES Demo](github_images/assembler_demo.png)
+  ![Scrolling NES Demo](images/assembler_demo.png)
 
 # Some new additions:
   - First version of Midi to NES music converter
