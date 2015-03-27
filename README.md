@@ -58,10 +58,27 @@ An NES assembler for the 6502 microprocessor written in Ruby
   There is an example file included (shown below) that is a modified port of
   the NES101 tutorial by Michael Martin.
 
+# MIDI converter
+
+  Included in the utils/midi directory is a my first version of a MIDI
+  to NES music converter, which is composed of a Ruby script backed
+  by a C++ program I wrote to parse MIDI files into YAML data.
+
+  At present, it can convert a MIDI file to a binary stream of values
+  that, when written to the APU in your 60hz VBlank, can be played
+  by the included sound driver code.
+
+  The idea is to be able to compose music for the NES using your 
+  favourite digital audio workstation in MIDI, and be able to convert
+  the square, triangle, and noise sequences to something playable
+  on the NES.
+
+
   ![Scrolling NES Demo](github_images/assembler_demo.png)
 
 # Some new additions:
-  - added .inc directive, to include other .asm files.
+  - First version of Midi to NES music converter
+  - added .inc directive, to include other .asm files
   - nes.asm library include file created, naming popular NES addresses
   - C Style in memory structs using .scope and .space directives
   - Explicit usage of zero page instructions with the zp suffix
