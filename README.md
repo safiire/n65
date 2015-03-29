@@ -1,7 +1,9 @@
 # N65 NES assembler version 0.5
 
 This is an assembler for the Nintendo Entertainment System's 2A03
-microprocessor.  The 2A03 is an 8-bit processor based on the MOS 6502.
+microprocessor.  
+
+The 2A03 is an 8-bit processor based on the MOS 6502.
 
  ```bash
    Usage: ./n65 <infile.asm> -o outfile.nes
