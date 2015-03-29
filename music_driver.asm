@@ -79,20 +79,6 @@
   sta nes.ppu.control
   sta nes.ppu.mask
 
-  ;  Initialize sound engine structure
-  ;  To read from $D000, and to write to $40**
-  lda #>music_buffer
-  sta sound_engine.stream_read_ptr_hi
-  lda #<music_buffer
-  sta sound_engine.stream_read_ptr_lo
-
-  ; Make the first delta happen immediately
-  lda #$01
-  sta sound_engine.delta
-
-  lda #$40
-  sta sound_engine.stream_write_ptr_hi
-
   jsr init_sound
 
   ;  Resume interrupts and NMI and loop here forever
@@ -106,13 +92,28 @@
 
 ;;;;
 ;  Initialize the APU to enable Pulse1
-;  Bitfield: ---D NT21
 .scope init_sound
   lda #$00
-  sta nes.apu.pulse1.control
-  sta nes.apu.pulse1.ramp_control
-  sta nes.apu.pulse1.ft
-  sta nes.apu.pulse1.ct
+  ldy #$00
+  clear_apu:
+    sta nes.apu, y
+    iny
+    cpy #$10
+    bne clear_apu
+
+  lda #>music_buffer
+  ldx #<music_buffer
+  sta sound_engine.stream_read_ptr_hi
+  stx sound_engine.stream_read_ptr_lo
+
+  lda #$40
+  ldx #$00
+  sta sound_engine.stream_write_ptr_hi
+  stx sound_engine.stream_write_ptr_lo
+
+  lda #$01
+  sta sound_engine.delta
+
   lda #$01
   sta nes.apu.channel_enable
   rts
