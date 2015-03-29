@@ -1,6 +1,6 @@
 
 
-module Assembler6502
+module N65
 
   ####
   ##  All the regexes used to parse in one module

@@ -1,7 +1,7 @@
 require_relative 'opcodes'
 require_relative 'regexes'
 
-module Assembler6502
+module N65
 
   ####
   ##  Represents a single 6502 Instruction

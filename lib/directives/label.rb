@@ -1,5 +1,5 @@
 
-module Assembler6502
+module N65
 
   ####
   ##  This class represents a label, and will create 

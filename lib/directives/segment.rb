@@ -1,5 +1,5 @@
 require_relative '../instruction_base' 
-module Assembler6502
+module N65
 
 
   ####

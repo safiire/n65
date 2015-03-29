@@ -1,6 +1,6 @@
 require 'pry-byebug'
 
-module Assembler6502
+module N65
 
   class SymbolTable
     attr_accessor :scope_stack

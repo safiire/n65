@@ -1,11 +1,11 @@
 #!/usr/bin/env ruby
 ###############################################################################
-##  6502 Assembler
+##  6502 Assembler for the NES's 2A03
 ##
-##  Usage: ./assembler_6502.rb <infile.asm>
+##  Usage: ./n65 <infile.asm>
 ##
 ##  This file runs the assembler though the commandline frontend.
 
 require_relative 'lib/front_end'
 
-Assembler6502::FrontEnd.new(ARGV).run
+N65::FrontEnd.new(ARGV).run

@@ -1,8 +1,13 @@
-# Assembler6502 0.5
+# N65 NES assembler version 0.5
 
-An NES assembler for the 6502 microprocessor written in Ruby
+This is an assembler for the Nintendo Entertainment System's 2A03
+microprocessor.  The 2A03 is an 8-bit processor based on the MOS 6502.
 
- Usage: ./assembler\_6502.rb <infile.asm> -o outfile.nes
+ ```bash
+   Usage: ./n65 <infile.asm> -o outfile.nes
+ ```
+
+  ![Scrolling NES Demo](images/assembler_demo.png)
 
   This is a pretty straightfoward assembler, which is currently set up
   to produce iNES formatted ROM binaries from 6502 assembly language files.
@@ -24,11 +29,10 @@ An NES assembler for the 6502 microprocessor written in Ruby
   It is good at knowing which addressing modes are and are not allowed for 
   each instruction, and contains some examples of correct syntax.
 
-  I believe this assembler can now handle bankswitching if you set a 
+  This assembler can now handle bankswitching if you set a 
   valid mapper in the header, write more than 2 PROG banks, and then 
   and write whatever bankswitching code is nessessary for the mapper
-  you've chosen.  I have not tried this yet, but I will be testing it
-  out soon.
+  you've chosen.
 
   This assembler supports symbolic labels which can be scoped.  When 
   writing assembly it can be easy to run out of effective names for 
@@ -74,9 +78,8 @@ An NES assembler for the 6502 microprocessor written in Ruby
   on the NES.
 
 
-  ![Scrolling NES Demo](images/assembler_demo.png)
-
 # Some new additions:
+  - .byte can now handle hex and binary literals, and symbols
   - First version of Midi to NES music converter
   - added .inc directive, to include other .asm files
   - nes.asm library include file created, naming popular NES addresses
@@ -109,11 +112,8 @@ An NES assembler for the 6502 microprocessor written in Ruby
   - Tested a ROM that changes background color
 
 # Some Todos:
-  - Create some documentation.
-  - Support binary %10101010 addresses and literals
+  - Create NES music from MIDI files easily
   - Make macros that can be used interchangably inline or as a subroutine
   - Create a library for common operations, DMA, sound, etc both inline and subroutine options
-  - Give this project a better name.
   - Create an interactive read eval compile loop?
-  - Make an interactive mode
 

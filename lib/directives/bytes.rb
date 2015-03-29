@@ -1,7 +1,7 @@
 require_relative '../instruction_base'
 require_relative '../regexes.rb'
 
-module Assembler6502
+module N65
 
 
   ####

@@ -1,5 +1,5 @@
 
-module Assembler6502
+module N65
 
   require_relative 'instruction'
   require_relative 'directives/ines_header'

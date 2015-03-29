@@ -2,7 +2,7 @@ require_relative 'symbol_table'
 require_relative 'memory_space'
 require_relative 'parser'
 
-module Assembler6502
+module N65
 
   class Assembler
     attr_reader :program_counter, :current_segment, :current_bank, :symbol_table, :virtual_memory, :promises

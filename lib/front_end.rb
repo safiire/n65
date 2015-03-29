@@ -1,7 +1,7 @@
 require 'optparse'
 require_relative 'assembler'
 
-module Assembler6502
+module N65
 
   ####
   ##  This class handles the front end aspects, 
@@ -55,7 +55,7 @@ module Assembler6502
       end
 
       #begin
-        Assembler6502::Assembler.from_file(input_file, @options[:output_file])
+        N65::Assembler.from_file(input_file, @options[:output_file])
       #rescue StandardError => error
         #STDERR.puts("Assemble Failed!")
         #STDERR.puts(error.class)

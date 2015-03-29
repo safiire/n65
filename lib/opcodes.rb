@@ -1,6 +1,6 @@
 require 'yaml'
 
-module Assembler6502
+module N65
 
   ##  Load OpCode definitions into this module
   MyDirectory = File.expand_path(File.dirname(__FILE__))
