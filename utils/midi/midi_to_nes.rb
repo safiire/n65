@@ -75,8 +75,8 @@ class MidiToNES
 
       ##  Ok this is a note either turning on or off
       if type == NoteOff || velocity.zero?
-        event = {:start => tick_count, :note => note, :velocity => 0}
-        events << event
+        #event = {:start => tick_count, :note => note, :velocity => 0}
+        #events << event
       else
         event = {:start => tick_count, :note => note, :velocity => velocity}
         events << event
@@ -105,8 +105,8 @@ class MidiToNES
       byte_stream << midi_tick_to_vblank(delta)   #  Delta
       byte_stream << pulse_control_value(event)   #  Value
       if event[:velocity].zero?
-        byte_stream << 0                          #  Off with 0 frequency timer
-        byte_stream << 0
+        #byte_stream << 0                          #  Off with 0 frequency timer
+        #byte_stream << 0
       else
         byte_stream << pulse_ft_value(event)      #  Value
         byte_stream << pulse_ct_value(event)      #  Value
@@ -124,15 +124,15 @@ class MidiToNES
   def pulse_control_value(event)
     ##  Start with 50% duty cycle, length counter halt is on
     ##  Constant volume is On, and volume is determined by bit-reducing the event velocity to 4-bit
-    value = 0b10110000         
+    value = 0b10000111         
 
-    four_bit_max  = (2**4 - 1)
-    seven_bit_max = (2**7 - 1)
+    #four_bit_max  = (2**4 - 1)
+    #seven_bit_max = (2**7 - 1)
 
-    volume_float = event[:velocity] / seven_bit_max.to_f
-    volume_4_bit = (volume_float * four_bit_max).round & 0b00001111
+    #volume_float = event[:velocity] / seven_bit_max.to_f
+    #volume_4_bit = (volume_float * four_bit_max).round & 0b00001111
 
-    value | volume_4_bit
+    #value | volume_4_bit
   end
 
 
@@ -151,10 +151,11 @@ class MidiToNES
   ##  This has the higher 3 bits of the timer, and L is the length counter.
   ##  For now let's just use duration as the length counter.
   def pulse_ct_value(event)
+    value = 0b11111000
 
     ##  We will grab the high 3 bits of the 11-bit timer value now
     timer_high_3bit = midi_note_to_nes_timer(event[:note]) & 0b11100000000
-    timer_high_3bit >> 8
+    value | (timer_high_3bit >> 8)
   end
 
 
@@ -163,6 +164,9 @@ class MidiToNES
   def midi_note_to_nes_timer(midi_note)
     frequency = Tuning * 2**((midi_note - 69) / 12.0)
     timer = (CPU / (16 * frequency)) - 1
+    if timer > (2**11 - 1)
+      fail("midi note #{midi_note} is too big at #{timer}")
+    end
     timer.round
   end
 
