@@ -55,41 +55,6 @@ module N65
     end
 
 
-=begin
-    ####
-    ##  Resolve symbol to a value, for example:
-    ##  scope1.scope2.variable
-    ##  It is not nessessary to specify the root scope :global
-    ##  You can just address anything by name in the current scope
-    ##  To go backwards in scope you need to write the full path
-    ##  like global.sprite.x or whatever
-    def resolve_symbol_old(name)
-
-      value = if name.include?('.')
-        path_ary = name.split('.').map(&:to_sym)
-        symbol = path_ary.pop
-        path_ary.shift if path_ary.first == :global
-        scope = retreive_scope(path_ary)
-        ##  We also try to look up the address associated with the scope
-        root = "-#{symbol}".to_sym
-        v = scope[symbol]
-        v.kind_of?(Hash) ? v[root] : v
-      else
-        root = "-#{name}".to_sym
-        scope = current_scope
-        ##  We also try to look up the address associated with the scope
-        v = scope[name.to_sym] || scope[root]
-        v.kind_of?(Hash) ? v[root] : v
-      end
-
-      if value.nil?
-        fail(UndefinedSymbol, name)
-      end
-      value
-    end
-=end
-
-
     ####
     ##  
     def resolve_symbol(name)

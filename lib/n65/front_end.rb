@@ -54,16 +54,7 @@ module N65
         exit(1)
       end
 
-      #begin
-        N65::Assembler.from_file(input_file, @options[:output_file])
-      #rescue StandardError => error
-        #STDERR.puts("Assemble Failed!")
-        #STDERR.puts(error.class)
-        #if error.message
-          #STDERR.puts(error.message)
-        #end
-        #exit(1)
-      #end
+      N65::Assembler.from_file(input_file, @options[:output_file])
     end
 
     private

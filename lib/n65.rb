@@ -50,7 +50,7 @@ module N65
       #end
       #puts "Done."
 
-      ##  For right now, let's just emit the first prog bank
+      ##  Emit the complete binary ROM
       File.open(outfile, 'w') do |fp|
         fp.write(assembler.emit_binary_rom)
       end

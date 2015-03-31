@@ -9,7 +9,7 @@ module N65
 
 
     ####
-    ##  Try to parse an incbin directive
+    ##  Try to parse a .ascii directive
     def self.parse(line)
       match_data = line.match(/^\.ascii\s+"([^"]+)"$/)
       return nil if match_data.nil?
@@ -18,7 +18,7 @@ module N65
 
 
     ####
-    ##  Initialize with filename
+    ##  Initialize with a string
     def initialize(string)
       @string = string
     end
