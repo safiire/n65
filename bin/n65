@@ -6,6 +6,6 @@
 ##
 ##  This file runs the assembler though the commandline frontend.
 
-require_relative 'lib/front_end'
+require_relative '../lib/n65/front_end'
 
 N65::FrontEnd.new(ARGV).run

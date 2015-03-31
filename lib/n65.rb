@@ -1,6 +1,7 @@
-require_relative 'symbol_table'
-require_relative 'memory_space'
-require_relative 'parser'
+require_relative 'n65/version'
+require_relative 'n65/symbol_table'
+require_relative 'n65/memory_space'
+require_relative 'n65/parser'
 
 module N65
 
@@ -25,8 +26,13 @@ module N65
 
       puts "Building #{infile}"
       ##  Process each line in the file
-      program.split(/\n/).each do |line|
-        assembler.assemble_one_line(line)
+      program.split(/\n/).each_with_index do |line, line_number|
+        begin
+          assembler.assemble_one_line(line)
+        rescue StandardError => e
+          STDERR.puts("\n\n#{e.class}\n#{line}\n#{e}\nOn line #{line_number}")
+          exit(1)
+        end
         print '.'
       end
       puts

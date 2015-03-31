@@ -2,11 +2,11 @@ gem 'minitest'
 require 'minitest/autorun'
 require 'minitest/unit'
 
-require_relative '../lib/memory_space.rb'
+require_relative '../lib/n65/memory_space.rb'
 
 
 class TestMemorySpace < MiniTest::Test
-  include Assembler6502
+  include N65
 
   def _test_create_prog_rom
     ##  First just try to read alll of it

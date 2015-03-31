@@ -1,5 +1,5 @@
 require 'optparse'
-require_relative 'assembler'
+require_relative '../n65'
 
 module N65
 

@@ -2,12 +2,12 @@ gem 'minitest'
 require 'minitest/autorun'
 require 'minitest/unit'
 
-require_relative '../lib/symbol_table.rb'
-require_relative '../lib/assembler.rb'
+require_relative '../lib/n65/symbol_table.rb'
+require_relative '../lib/n65.rb'
 
 
 class TestSymbolTable < MiniTest::Test
-  include Assembler6502
+  include N65
 
   ####
   ##  Test that we can make simple global symbols

@@ -14,6 +14,11 @@ The 2A03 is an 8-bit processor based on the MOS 6502.
   This is a pretty straightfoward assembler, which is currently set up
   to produce iNES formatted ROM binaries from 6502 assembly language files.
 
+  <a href="http://irkenkitties.com/blog/2015/03/29/creating-sound-on-the-nes/">Here</a>
+  is a recent blog post that goes through creating a program with this
+  n65, showing the essential syntax and more.  Best thing until I create
+  some real documentation.
+
   Inside An NES cartridge there are basically some number of ROM chips
   which contain banks of either program code or character (graphics) 
   data.  A PROG ROM bank is generally 16KB, and a CHAR ROM bank is generally

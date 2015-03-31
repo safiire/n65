@@ -8,7 +8,7 @@ module N65
   class Inc < InstructionBase
 
     ####  System include directory
-    SystemInclude = File.dirname(__FILE__) + "/../../nes_lib"
+    SystemInclude = File.dirname(__FILE__) + "/../../../nes_lib"
 
     ####  Custom Exceptions
     class FileNotFound < StandardError; end
