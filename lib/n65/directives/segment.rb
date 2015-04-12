@@ -1,4 +1,4 @@
-require_relative '../instruction_base' 
+require_relative '../instruction_base'
 module N65
 
 

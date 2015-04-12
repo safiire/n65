@@ -94,7 +94,7 @@ module N65
     ####
     ##  This is the main assemble method, it parses one line into an object
     ##  which when given a reference to this assembler, controls the assembler
-    ##  itself through public methods, executing assembler directives, and 
+    ##  itself through public methods, executing assembler directives, and
     ##  emitting bytes into our virtual memory spaces.  Empty lines or lines
     ##  with only comments parse to nil, and we just ignore them.
     def assemble_one_line(line)
@@ -120,7 +120,7 @@ module N65
 
 
     ####
-    ##  This rewinds the state of the assembler, so a promise can be 
+    ##  This rewinds the state of the assembler, so a promise can be
     ##  executed with a previous state, for example if we can't resolve
     ##  a symbol right now, and want to try during the second pass
     def with_saved_state(&block)
@@ -194,7 +194,7 @@ module N65
       puts "+ #{progs.size} PROG ROM bank#{progs.size != 1 ? 's' : ''}"
       puts "+ #{chars.size} CHAR ROM bank#{chars.size != 1 ? 's' : ''}"
 
-      rom_size  = 0x10 
+      rom_size  = 0x10
       rom_size += MemorySpace::BankSizes[:prog] * progs.size
       rom_size += MemorySpace::BankSizes[:char] * chars.size
 

@@ -25,7 +25,7 @@ module N65
     ##  Define a new scope, which can be anonymous or named
     ##  and switch into that scope
     def enter_scope(name = nil)
-      name = generate_name if name.nil? 
+      name = generate_name if name.nil?
       name = name.to_sym
       scope = current_scope
       if scope.has_key?(name)
@@ -56,7 +56,7 @@ module N65
 
 
     ####
-    ##  
+    ##
     def resolve_symbol(name)
       method = name.include?('.') ? :resolve_symbol_dot_syntax : :resolve_symbol_scoped
       value = self.send(method, name)

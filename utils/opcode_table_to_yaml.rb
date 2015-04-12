@@ -3,7 +3,7 @@
 ###############################################################################
 ##  http://www.6502.org/tutorials/6502opcodes.html
 ##  This web page has information about each and every 6502 instruction
-##  Specifically: 
+##  Specifically:
 ##
 ##  - Description of what each of the instructions do
 ##  - Which modes are supported by which instructions, immediate, zero page
@@ -13,7 +13,7 @@
 ##  - The possibly variable number of cycles each instruction takes.
 ##
 ##  There are 56 of them, and in my programmer laziness I just wrote this
-##  script to parse the page into the data structure that you see in 
+##  script to parse the page into the data structure that you see in
 ##  opcodes.yaml.  This really helped in creating the assembler, and
 ##  it had basically everything I needed to know, and sped up writing
 ##  this by huge factor.  So, yay to this page, and this script!
@@ -77,7 +77,7 @@ lines.each do |line|
     {:indirect => hash}
   when /^Implied/
     {:implied => hash}
-  else 
+  else
     {}
   end
   output[name].merge!(hash)

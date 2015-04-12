@@ -66,7 +66,7 @@ class TestSymbolTable < MiniTest::Test
 
     st.exit_scope
 
-    assert_raises(SymbolTable::UndefinedSymbol) do 
+    assert_raises(SymbolTable::UndefinedSymbol) do
       assert_equal('woof', st.resolve_symbol('dog'))
     end
   end
@@ -106,7 +106,7 @@ class TestSymbolTable < MiniTest::Test
 
 
   ####
-  ##  How do you get stuff out of the global scope when you are in 
+  ##  How do you get stuff out of the global scope when you are in
   ##  a sub scope?
   def test_access_global_scope
     st = SymbolTable.new
@@ -144,18 +144,18 @@ class TestSymbolTable < MiniTest::Test
 
 
   ####
-  ##  Now I want to test that I cannot exist the outer-most 
+  ##  Now I want to test that I cannot exist the outer-most
   ##  global scope by mistake
   def test_cant_exit_global
     st = SymbolTable.new
-    assert_raises(SymbolTable::CantExitScope) do 
+    assert_raises(SymbolTable::CantExitScope) do
       st.exit_scope
     end
   end
 
 
   ####
-  ##  I would like the name of the scope to take on the 
+  ##  I would like the name of the scope to take on the
   ##  value of the program counter at that location.
   def test_scope_as_symbol
     program = <<-ASM

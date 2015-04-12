@@ -40,7 +40,7 @@ class TestMemorySpace < MiniTest::Test
 
   def _test_reading_out_of_bounds
     space = MemorySpace.create_prog_rom
-    assert_raises(MemorySpace::AccessOutsideProgRom) do 
+    assert_raises(MemorySpace::AccessOutsideProgRom) do
       space.read(0x200, 10)
     end
 
@@ -50,7 +50,7 @@ class TestMemorySpace < MiniTest::Test
 
     ##  But something like this should explode
     space = MemorySpace.create_char_rom
-    assert_raises(MemorySpace::AccessOutsideCharRom) do 
+    assert_raises(MemorySpace::AccessOutsideCharRom) do
       space.read(0x8001, 10)
     end
   end
@@ -66,7 +66,7 @@ class TestMemorySpace < MiniTest::Test
 
     ##  Write the NMI address to FFFA
     space.write(0xFFFA, bytes)
-   
+
     ##  Write the entry point to FFFC
     space.write(0xFFFC, bytes)
 

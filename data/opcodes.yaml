@@ -1,17 +1,17 @@
 ---
 :adc:
   :description: "ADd with Carry"
-  :flags: 
+  :flags:
     - :s
     - :v
     - :z
     - :c
-  :immediate: 
+  :immediate:
     :hex: 0x69
     :len: 2
     :cycles: 2
     :boundry_add: false
-  :zero_page: 
+  :zero_page:
     :hex: 0x65
     :len: 2
     :cycles: 3
@@ -49,7 +49,7 @@
 
 :and:
   :description: "bitwise AND with accumulator"
-  :flags: 
+  :flags:
     - :s
     - :z
   :immediate:
@@ -95,7 +95,7 @@
 
 :asl:
   :description: "Arithmetic Shift Left"
-  :flags: 
+  :flags:
     - :s
     - :z
     - :c
@@ -127,7 +127,7 @@
 
 :bit:
   :description: "test BITs"
-  :flags: 
+  :flags:
     - :n
     - :v
     - :z
@@ -202,9 +202,9 @@
 
 :brk:
   :description: "BReaK"
-  :flags: 
+  :flags:
     - :b
-  :implied: 
+  :implied:
     :hex: 0x0
     :len: 1
     :cycles: 7
@@ -212,7 +212,7 @@
 
 :cmp:
   :description: "CoMPare accumulator"
-  :flags: 
+  :flags:
     - :s
     - :c
     - :z
@@ -259,7 +259,7 @@
 
 :cpx:
   :description: "ComPare X register"
-  :flags: 
+  :flags:
     - :s
     - :c
     - :z
@@ -281,7 +281,7 @@
 
 :cpy:
   :description: "ComPare Y register"
-  :flags: 
+  :flags:
     - :s
     - :c
     - :z
@@ -303,7 +303,7 @@
 
 :dec:
   description: "DECrement memory"
-  :flags: 
+  :flags:
     - :s
     - :z
   :zero_page:
@@ -329,7 +329,7 @@
 
 :eor:
   :description: "bitwise Exclusive OR"
-  :flags: 
+  :flags:
     - :s
     - :z
   :immediate:
@@ -375,7 +375,7 @@
 
 :clc:
   :description: "CLear Carry"
-  :flags: 
+  :flags:
     - :c
   :implied:
     :hex: 0x18
@@ -383,7 +383,7 @@
     :cycles: 2
 :sec:
   :description: "SEt Carry"
-  :flags: 
+  :flags:
     - :c
   :implied:
     :hex: 0x38
@@ -391,7 +391,7 @@
     :cycles: 2
 :cli:
   :description: "CLear Interrupt"
-  :flags: 
+  :flags:
     - :i
   :implied:
     :hex: 0x58
@@ -399,7 +399,7 @@
     :cycles: 2
 :sei:
   :description: "SEt Interrupt"
-  :flags: 
+  :flags:
     - :i
   :implied:
     :hex: 0x78
@@ -407,7 +407,7 @@
     :cycles: 2
 :clv:
   :description: "CLear oVerflow"
-  :flags: 
+  :flags:
     - :v
   :implied:
     :hex: 0xB8
@@ -415,7 +415,7 @@
     :cycles: 2
 :cld:
   :description: "CLear Decimal"
-  :flags: 
+  :flags:
     - :d
   :implied:
     :hex: 0xD8
@@ -423,7 +423,7 @@
     :cycles: 2
 :sed:
   :description: "SEt Decimal"
-  :flags: 
+  :flags:
     - :d
   :implied:
     :hex: 0xF8
@@ -432,7 +432,7 @@
 
 :inc:
   :description: "INCrement memory"
-  :flags: 
+  :flags:
     - :s
     - :z
   :zero_page:
@@ -481,7 +481,7 @@
 
 :lda:
   :description: "LoaD Accumulator"
-  :flags: 
+  :flags:
     - :s
     - :z
   :immediate:
@@ -527,7 +527,7 @@
 
 :ldx:
   :description: "LoaD X register"
-  :flags: 
+  :flags:
     - :s
     - :z
   :immediate:
@@ -558,7 +558,7 @@
 
 :ldy:
   :description: "LoaD Y register"
-  :flags: 
+  :flags:
     - :s
     - :z
   :immediate:
@@ -589,7 +589,7 @@
 
 :lsr:
   :description: "Logical Shift Right"
-  :flags: 
+  :flags:
     - :s
     - :z
     - :c
@@ -630,7 +630,7 @@
 
 :ora:
   :description: "bitwise OR with Accumulator"
-  :flags: 
+  :flags:
     - :s
     - :z
   :immediate:
@@ -676,7 +676,7 @@
 
 :tax:
   :description: "Transfer A to X"
-  :flags: 
+  :flags:
     - :s
     - :z
   :implied:
@@ -686,7 +686,7 @@
     :boundry_add: false
 :txa:
   :description: "Transfer X to A"
-  :flags: 
+  :flags:
     - :s
     - :z
   :implied:
@@ -696,7 +696,7 @@
     :boundry_add: false
 :dex:
   :description: "DEcrement X"
-  :flags: 
+  :flags:
     - :s
     - :z
   :implied:
@@ -706,7 +706,7 @@
     :boundry_add: false
 :inx:
   :description: "INcrement X"
-  :flags: 
+  :flags:
     - :s
     - :z
   :implied:
@@ -716,7 +716,7 @@
     :boundry_add: false
 :tay:
   :description: "Transfer A to Y"
-  :flags: 
+  :flags:
     - :s
     - :z
   :implied:
@@ -726,7 +726,7 @@
     :boundry_add: false
 :tya:
   :description: "Transfer Y to A"
-  :flags: 
+  :flags:
     - :s
     - :z
   :implied:
@@ -736,7 +736,7 @@
     :boundry_add: false
 :dey:
   :description: "DEcrement Y"
-  :flags: 
+  :flags:
     - :s
     - :z
   :implied:
@@ -746,7 +746,7 @@
     :boundry_add: false
 :iny:
   :description: "INcrement Y"
-  :flags: 
+  :flags:
     - :s
     - :z
   :implied:
@@ -757,7 +757,7 @@
 
 :rol:
   :description: "ROtate Left"
-  :flags: 
+  :flags:
     - :s
     - :z
     - :c
@@ -789,7 +789,7 @@
 
 :ror:
   :description: "ROtate Right"
-  :flags: 
+  :flags:
     - :s
     - :z
     - :c
@@ -821,7 +821,7 @@
 
 :rti:
   :description: "ReTurn from Interrupt, TODO: Flags could be wrong"
-  :flags: 
+  :flags:
     - :n
     - :v
     - :u
@@ -847,7 +847,7 @@
 
 :sbc:
   :description: "SuBtract with Carry"
-  :flags: 
+  :flags:
     - :s
     - :v
     - :z
@@ -976,7 +976,7 @@
     :boundry_add: false
 :plp:
   :description: "PuLl Processor status"
-  :flags: 
+  :flags:
     - :n
     - :v
     - :u

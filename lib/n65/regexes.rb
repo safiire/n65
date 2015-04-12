@@ -5,7 +5,7 @@ module N65
   ####
   ##  All the regexes used to parse in one module
   module Regexes
-    ##  Mnemonics 
+    ##  Mnemonics
     Mnemonic  = '([A-Za-z]{3})'
     Branches  = '(BPL|BMI|BVC|BVS|BCC|BCS|BNE|BEQ|bpl|bmi|bvc|bvs|bcc|bcs|bne|beq)'
 

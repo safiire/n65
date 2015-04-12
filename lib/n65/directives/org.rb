@@ -16,7 +16,7 @@ module N65
       Org.new(address)
     end
 
-    
+
     ####
     ##  Initialized with address to switch to
     def initialize(address)

@@ -119,12 +119,12 @@ class MidiToNES
 
   ####
   ##  Given an event, produce a value for register nes.apu.pulse1.control
-  ##  DDLC VVVV 
+  ##  DDLC VVVV
   ##  Duty (D), envelope loop / length counter halt (L), constant volume (C), volume/envelope (V)
   def pulse_control_value(event)
     ##  Start with 50% duty cycle, length counter halt is on
     ##  Constant volume is On, and volume is determined by bit-reducing the event velocity to 4-bit
-    value = 0b10000111         
+    value = 0b10000111
 
     #four_bit_max  = (2**4 - 1)
     #seven_bit_max = (2**7 - 1)

@@ -15,7 +15,7 @@ module N65
     class AddressOutOfRange < StandardError; end
     class ArgumentTooLarge < StandardError; end
 
-    ##  Include Regexes 
+    ##  Include Regexes
     include Regexes
 
     AddressingModes = {
@@ -26,7 +26,7 @@ module N65
         :regex_label => /^#{Branches}\s+#{Sym}$/
       },
 
-      :immediate => { 
+      :immediate => {
         :example     => 'AAA #$FF',
         :display     => '%s #$%.2X',
         :regex       => /^#{Mnemonic}\s+#{Immediate}$/,
@@ -116,7 +116,7 @@ module N65
         match_data = parse_info[:regex].match(line)
 
         unless match_data.nil?
-          ##  We must have a straight instruction without symbols, construct 
+          ##  We must have a straight instruction without symbols, construct
           ##  an Instruction from the match_data, and return it
           _, op, arg_hex, arg_bin = match_data.to_a
 
@@ -139,12 +139,12 @@ module N65
             match_data = parse_info[:regex_label].match(line)
 
             unless match_data.nil?
-              ##  We have found an assembly instruction containing a symbolic 
+              ##  We have found an assembly instruction containing a symbolic
               ##  argument.  We can resolve this symbol later by looking at the
               ##  symbol table in the #exec method
               match_array = match_data.to_a
 
-              ##  If we have a 4 element array, this means we matched something 
+              ##  If we have a 4 element array, this means we matched something
               ##  like LDA #<label, which is a legal immediate one byte value
               ##  by taking the msb.  We need to make that distinction in the
               ##  Instruction, by passing an extra argument

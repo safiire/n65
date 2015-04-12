@@ -31,7 +31,7 @@ module N65
 
 
     ####
-    ##  Execute on the assembler, also create a symbol referring to 
+    ##  Execute on the assembler, also create a symbol referring to
     ##  the current pc which contains a hyphen, and is impossible for
     ##  the user to create.  This makes a scope simultaneously act as
     ##  a label to the current PC.  If someone tries to use a scope

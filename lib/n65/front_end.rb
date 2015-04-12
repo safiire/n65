@@ -4,7 +4,7 @@ require_relative '../n65'
 module N65
 
   ####
-  ##  This class handles the front end aspects, 
+  ##  This class handles the front end aspects,
   ##  parsing the commandline options and running the assembler
   class FrontEnd
 
@@ -42,7 +42,7 @@ module N65
         STDERR.puts "Input file #{input_file} does not exist"
         exit(1)
       end
-      
+
       ##  Maybe they didn't provide an output file name, so we'll guess
       if @options[:output_file].nil?
         ext = File.extname(input_file)

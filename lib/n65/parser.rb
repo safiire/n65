@@ -19,7 +19,7 @@ module N65
 
   ####
   ##  This class determines what sort of line of code we
-  ##  are dealing with, parses one line, and returns an 
+  ##  are dealing with, parses one line, and returns an
   ##  object deriving from InstructionBase
   class Parser
 

@@ -2,8 +2,8 @@
 module N65
 
   ####
-  ##  This class represents a label, and will create 
-  ##  an entry in the symbol table associated with 
+  ##  This class represents a label, and will create
+  ##  an entry in the symbol table associated with
   ##  the address it appears at.
   class Label
 
