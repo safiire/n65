@@ -69,10 +69,18 @@ module N65
           @options[:output_file] = output_file;
         end
 
+        opts.on('-v', '--version', 'Displays Version') do
+          puts "N65 Assembler Version #{N65::VERSION}"
+          exit
+        end
+
+
         opts.on('-h', '--help', 'Displays Help') do
           puts opts
           exit
         end
+
+
       end
     end
 
