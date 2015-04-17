@@ -171,10 +171,10 @@ module N65
     ##  OpCodes contains the definitions of each OpCode
     def initialize(op, arg, mode, byte_selector = nil)
 
-      ##  Lookup the definition of this opcode, otherwise it is an invalid instruction
       @byte_selector = byte_selector.nil? ? nil : byte_selector.to_sym
       fail(InvalidInstruction, "Bad Byte selector: #{byte_selector}") unless [:>, :<, nil].include?(@byte_selector)
 
+      ##  Lookup the definition of this opcode, otherwise it is an invalid instruction
       @op = op.downcase.to_sym
       definition = OpCodes[@op]
       fail(InvalidInstruction, op) if definition.nil?
@@ -195,7 +195,7 @@ module N65
 
 
     ####
-    ##  Return if this instruction is a zero page instruction
+    ##  Is this instruction a zero page instruction?
     def zero_page_instruction?
       [:zero_page, :zero_page_x, :zero_page_y].include?(@mode)
     end
@@ -224,8 +224,7 @@ module N65
         assembler.write_memory(emit_bytes)
       when String
         begin
-          ##  This is a bug, I don't believe it will ever get here.
-          ##  I think it always resolves every symbol later.
+          ##  This works correctly now :)
           promise.call
         rescue SymbolTable::UndefinedSymbol
           placeholder = [@hex, 0xDE, 0xAD][0...@length]
@@ -267,18 +266,6 @@ module N65
       else
         fail("Can't handle instructions > 3 bytes")
       end
-    end
-
-
-    ####
-    ##  Pretty Print
-    def to_s
-      #display = AddressingModes[@mode][:display]
-      #if @arg.kind_of?(String)
-        #sprintf("#{display} (#{@mode}, #{@arg})", @op, 0x0)
-      #else
-        #sprintf("#{display} (#{@mode})", @op, @arg)
-      #end
     end
 
 

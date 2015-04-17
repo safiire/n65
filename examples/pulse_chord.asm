@@ -37,7 +37,7 @@
   sei                   ; SEt Interrupt (Disables them)
   cld                   ; CLear Decimal Mode
 
-  ldx #$ff              
+  ldx #$ff
   txs                   ; Set the stack pointer
 
   ldx #$00

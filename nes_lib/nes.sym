@@ -1,6 +1,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;  Let's start a little library for naming parts of memory in the NES
-;  
+;
 ;  Including this file will not emit any instructions or data into your binary
 ;  It only defines symbols in the symbol table to name memory addresses
 ;
@@ -75,7 +75,7 @@
   .space controller2 1                             ; $4017
   .scope mapper
     .org $8000
-    .space unrom 1                                 
+    .space unrom 1
     .org $8000
     .space cnrom 1
     .org $8000

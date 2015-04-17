@@ -117,9 +117,9 @@ module N65
         unless address_inside_char_rom?(address)
           fail(AccessOutsideCharRom, sprintf("Address $%.4X is outside CHAR ROM", address))
         end
-        address
+        return address
       else
-        address
+        return address
       end
     end
 
