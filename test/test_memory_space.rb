@@ -8,7 +8,7 @@ require_relative '../lib/n65/memory_space.rb'
 class TestMemorySpace < MiniTest::Test
   include N65
 
-  def _test_create_prog_rom
+  def test_create_prog_rom
     ##  First just try to read alll of it
     space = MemorySpace.create_prog_rom
     contents = space.read(0x8000, 0x4000)
@@ -23,7 +23,7 @@ class TestMemorySpace < MiniTest::Test
   end
 
 
-  def _test_writing
+  def test_writing
     ##  Write some bytes into prog 2 area
     space = MemorySpace.create_prog_rom
     space.write(0xC000, "hi there".bytes)
@@ -38,7 +38,7 @@ class TestMemorySpace < MiniTest::Test
   end
 
 
-  def _test_reading_out_of_bounds
+  def test_reading_out_of_bounds
     space = MemorySpace.create_prog_rom
     assert_raises(MemorySpace::AccessOutsideProgRom) do
       space.read(0x200, 10)
