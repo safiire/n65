@@ -52,7 +52,7 @@ module N65
 
       ##  Try to execute it now, or setup the promise to return
       case @value
-      when Fixnum
+      when Integer
         bytes = [@value & 0xFFFF].pack('S').bytes
         assembler.write_memory(bytes)
       when String

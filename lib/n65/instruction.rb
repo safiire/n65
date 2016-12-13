@@ -57,7 +57,7 @@ module N65
         :example     => 'AAA $FF, Y',
         :display     => '%s $%.2X, Y',
         :regex       => /^#{Mnemonic}\s+#{Num8}\s?,\s?#{YReg}$/,
-        :regex_label => /^#{Mnemonic}\s+#{Sym}\s?,\s?#{YReg} zp$/
+        :regex_label => /^#{Mnemonic}\s+#{Sym}\s?,\s?#{YReg}\s+zp$/
       },
 
       :absolute => {
@@ -220,7 +220,7 @@ module N65
       end
 
       case @arg
-      when Fixnum, NilClass
+      when Integer, NilClass
         assembler.write_memory(emit_bytes)
       when String
         begin
