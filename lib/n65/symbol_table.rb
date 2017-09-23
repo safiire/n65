@@ -56,10 +56,30 @@ module N65
 
 
     ####
-    ##
+    ##  Separate arithmetic from scope name
+    def find_arithmetic(name)
+      last_name = name.split('.').last
+      md = last_name.match(/([\+\-\*\/])(\d+)$/)
+      f = lambda{|v| v}
+
+      unless md.nil?
+        full_match, operator, argument = md.to_a
+        name.gsub!(full_match, '')
+        f = lambda {|value| value.send(operator.to_sym, argument.to_i) }
+      end
+
+      [name, f]
+    end
+
+
+    ####
+    ##  Resolve a symbol to its value
     def resolve_symbol(name)
+      name, arithmetic = find_arithmetic(name)
+
       method = name.include?('.') ? :resolve_symbol_dot_syntax : :resolve_symbol_scoped
       value = self.send(method, name)
+      value = arithmetic.call(value)
 
       fail(UndefinedSymbol, name) if value.nil?
       value

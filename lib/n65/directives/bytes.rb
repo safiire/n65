@@ -46,7 +46,7 @@ module N65
 
 
     ####
-    ##  Initialize with filename
+    ##  Initialize with a byte array
     def initialize(bytes_array)
       @bytes_array = bytes_array
     end
@@ -62,7 +62,7 @@ module N65
           when Fixnum
             byte
           when String
-            value = saved_assembler.symbol_table.resolve_symbol(byte)
+            saved_assembler.symbol_table.resolve_symbol(byte)
           else
             fail(InvalidByteValue, byte)
           end

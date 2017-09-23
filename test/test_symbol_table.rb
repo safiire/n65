@@ -74,7 +74,7 @@ class TestSymbolTable < MiniTest::Test
 
   ####
   ##  Test exiting a sub scope, and being able to access a symbol through a full path
-  def test_exit_scope
+  def test_exit_scope_full_path
     st = SymbolTable.new
     st.enter_scope('animals')
     st.define_symbol('dog', 'woof')
