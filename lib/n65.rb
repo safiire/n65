@@ -18,13 +18,14 @@ module N65
 
     ####
     ##  Assemble from an asm file to a nes ROM
-    def self.from_file(infile, outfile)
+    def self.from_file(infile, options)
       fail(FileNotFound, infile) unless File.exists?(infile)
 
       assembler = self.new
       program = File.read(infile)
+      output_file = options[:output_file]
 
-      puts "Building #{infile}"
+      puts "Building #{infile}" unless options[:quiet]
       ##  Process each line in the file
       program.split(/\n/).each_with_index do |line, line_number|
         begin
@@ -33,28 +34,35 @@ module N65
           STDERR.puts("\n\n#{e.class}\n#{line}\n#{e}\nOn line #{line_number}")
           exit(1)
         end
-        print '.'
+        print '.' unless options[:quiet]
       end
-      puts
+      puts unless options[:quiet]
 
       ##  Second pass to resolve any missing symbols.
-      print "Second pass, resolving symbols..."
+      print "Second pass, resolving symbols..." unless options[:quiet]
       assembler.fulfill_promises
-      puts " Done."
+      puts " Done." unless options[:quiet]
 
-      ##  Let's not export the symbol table to a file anymore
-      ##  Will add an option for this later.
-      #print "Writing symbol table to #{outfile}.yaml..."
-      #File.open("#{outfile}.yaml", 'w') do |fp|
-        #fp.write(assembler.symbol_table.export_to_yaml)
-      #end
-      #puts "Done."
+      if options[:write_symbol_table]
+        print "Writing symbol table to #{output_file}.yaml..." unless options[:quiet]
+        File.open("#{output_file}.yaml", 'w') do |fp|
+          fp.write(assembler.symbol_table.export_to_yaml)
+        end
+        puts "Done." unless options[:quiet]
+      end
 
       ##  Emit the complete binary ROM
-      File.open(outfile, 'w') do |fp|
-        fp.write(assembler.emit_binary_rom)
+      rom = assembler.emit_binary_rom
+      File.open(output_file, 'w') do |fp|
+        fp.write(rom)
       end
-      puts "All Done :)"
+
+      unless options[:quiet]
+        rom_size = rom.size
+        rom_size_hex = "%x" % rom_size
+        assembler.print_bank_usage
+        puts "Total size: $#{rom_size_hex}, #{rom_size} bytes"
+      end
     end
 
 
@@ -190,15 +198,11 @@ module N65
     def emit_binary_rom
       progs = @virtual_memory[:prog]
       chars = @virtual_memory[:char]
-      puts "iNES Header"
-      puts "+ #{progs.size} PROG ROM bank#{progs.size != 1 ? 's' : ''}"
-      puts "+ #{chars.size} CHAR ROM bank#{chars.size != 1 ? 's' : ''}"
 
       rom_size  = 0x10
       rom_size += MemorySpace::BankSizes[:prog] * progs.size
       rom_size += MemorySpace::BankSizes[:char] * chars.size
 
-      puts "= Output ROM will be #{rom_size} bytes"
       rom = MemorySpace.new(rom_size, :rom)
 
       offset = 0x0
@@ -212,6 +216,24 @@ module N65
         offset += rom.write(offset, char.read(0x0, MemorySpace::BankSizes[:char]))
       end
       rom.emit_bytes.pack('C*')
+    end
+
+
+    ####
+    ##  Display information about the bank sizes and total usage
+    def print_bank_usage
+      puts
+      puts "ROM Structure {"
+      puts "  iNES 1.0 Header: $10 bytes"
+
+      @virtual_memory[:prog].each_with_index do |prog_rom, bank_number|
+        puts "  PROG ROM bank #{bank_number}: #{prog_rom.usage_info}"
+      end
+
+      @virtual_memory[:char].each_with_index do |char_rom, bank_number|
+        puts "  CHAR ROM bank #{bank_number}: #{char_rom.usage_info}"
+      end
+      puts "}"
     end
 
 

@@ -11,7 +11,7 @@ module N65
     ####
     ##  Initialize with ARGV commandline
     def initialize(argv)
-      @options = {:output_file => nil}
+      @options = {output_file: nil, write_symbol_table: false, quiet: false}
       @argv = argv.dup
     end
 
@@ -31,7 +31,7 @@ module N65
 
       ##  Only can assemble one file at once for now
       if @argv.size != 1
-        STDERR.puts "Can only assemble one input file at once :("
+        STDERR.puts "Can only assemble one input file at once, but you can use .inc and .incbin directives"
         exit(1)
       end
 
@@ -54,7 +54,7 @@ module N65
         exit(1)
       end
 
-      N65::Assembler.from_file(input_file, @options[:output_file])
+      N65::Assembler.from_file(input_file, @options)
     end
 
     private
@@ -69,11 +69,18 @@ module N65
           @options[:output_file] = output_file;
         end
 
+        opts.on('-s', '--symbols', 'Outputs a symbol map') do
+          @options[:write_symbol_table] = true
+        end
+
+        opts.on('-q', '--quiet', 'No output on success') do
+          @options[:quiet] = true
+        end
+
         opts.on('-v', '--version', 'Displays Version') do
           puts "N65 Assembler Version #{N65::VERSION}"
           exit
         end
-
 
         opts.on('-h', '--help', 'Displays Help') do
           puts opts

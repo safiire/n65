@@ -48,6 +48,7 @@ module N65
     def initialize(size, type)
       @type = type
       @memory = Array.new(size, 0x0)
+      @bytes_written = 0
     end
 
 
@@ -71,6 +72,7 @@ module N65
 
       bytes.each_with_index do |byte, index|
         @memory[from_normalized + index] = byte
+        @bytes_written += 1
       end
       bytes.size
     end
@@ -80,6 +82,17 @@ module N65
     ##  Return the memory as an array of bytes to write to disk
     def emit_bytes
       @memory
+    end
+
+
+    ####
+    ##  Bank Usage information
+    def usage_info
+      percent_used = @bytes_written / @memory.size.to_f * 100
+      percent_string = "%0.2f" % percent_used
+      bytes_written_hex = "$%04x" % @bytes_written
+      memory_size_hex = "$%04x" % @memory.size
+      "(#{bytes_written_hex} / #{memory_size_hex}) #{percent_string}%"
     end
 
 
