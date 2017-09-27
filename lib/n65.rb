@@ -43,10 +43,20 @@ module N65
       assembler.fulfill_promises
       puts " Done." unless options[:quiet]
 
+      ##  Optionally write out a symbol map
       if options[:write_symbol_table]
         print "Writing symbol table to #{output_file}.yaml..." unless options[:quiet]
         File.open("#{output_file}.yaml", 'w') do |fp|
           fp.write(assembler.symbol_table.export_to_yaml)
+        end
+        puts "Done." unless options[:quiet]
+      end
+
+      ##  Optionally write out cycle count for subroutines
+      if options[:cycle_count]
+        print "Writing subroutine cycle counts to #{output_file}.cycles.yaml..." unless options[:quiet]
+        File.open("#{output_file}.cycles.yaml", 'w') do |fp|
+          fp.write(assembler.symbol_table.export_cycle_count_yaml)
         end
         puts "Done." unless options[:quiet]
       end
@@ -110,6 +120,15 @@ module N65
 
       unless parsed_object.nil?
         exec_result = parsed_object.exec(self)
+
+        ##  TODO
+        ##  I could perhaps keep a tally of cycles used per top level scope here
+        if parsed_object.respond_to?(:cycles)
+          #puts "Line: #{line}"
+          #puts "Cycles #{parsed_object.cycles}"
+          #puts "Sym: #{@symbol_table.scope_stack}"
+          @symbol_table.add_cycles(parsed_object.cycles)
+        end
 
         ##  If we have returned a promise save it for the second pass
         @promises << exec_result if exec_result.kind_of?(Proc)

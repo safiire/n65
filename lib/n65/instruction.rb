@@ -6,7 +6,7 @@ module N65
   ####
   ##  Represents a single 6502 Instruction
   class Instruction
-    attr_reader :op, :arg, :mode, :hex, :description, :length, :cycle, :boundry_add, :flags, :address
+    attr_reader :op, :arg, :mode, :hex, :description, :length, :cycles, :boundry_add, :flags, :address
 
     ##  Custom Exceptions
     class InvalidInstruction < StandardError; end

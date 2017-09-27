@@ -11,7 +11,7 @@ module N65
     ####
     ##  Initialize with ARGV commandline
     def initialize(argv)
-      @options = {output_file: nil, write_symbol_table: false, quiet: false}
+      @options = {output_file: nil, write_symbol_table: false, quiet: false, cycle_count: false}
       @argv = argv.dup
     end
 
@@ -57,6 +57,7 @@ module N65
       N65::Assembler.from_file(input_file, @options)
     end
 
+
     private
 
     ####
@@ -71,6 +72,10 @@ module N65
 
         opts.on('-s', '--symbols', 'Outputs a symbol map') do
           @options[:write_symbol_table] = true
+        end
+
+        opts.on('-c', '--cycles', 'Outputs a cycle count yaml document') do
+          @options[:cycle_count] = true
         end
 
         opts.on('-q', '--quiet', 'No output on success') do

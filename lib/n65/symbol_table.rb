@@ -18,6 +18,19 @@ module N65
       }
       @anonymous_scope_number = 0
       @scope_stack = [:global]
+      @subroutine_cycles = {}
+    end
+
+
+    ####
+    ##  Add a running cycle count to current top level scopes (ie subroutines)
+    def add_cycles(cycles)
+      cycles ||= 0
+      top_level_subroutine = @scope_stack[1]
+      unless top_level_subroutine.nil?
+        @subroutine_cycles[top_level_subroutine] ||= 0
+        @subroutine_cycles[top_level_subroutine] += cycles
+      end
     end
 
 
@@ -29,7 +42,6 @@ module N65
       name = name.to_sym
       scope = current_scope
       if scope.has_key?(name)
-        #path_string = generate_scope_path(path_ary)
         fail(InvalidScope, "Scope: #{name} already exists")
       end
       scope[name] = {}
@@ -132,6 +144,13 @@ module N65
         integer = match.to_i
         sprintf("0x%.4X", integer)
       end
+    end
+
+
+    ####
+    ##  Export a cycle count for top level subroutines
+    def export_cycle_count_yaml
+      @subroutine_cycles.to_yaml
     end
 
 

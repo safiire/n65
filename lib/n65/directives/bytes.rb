@@ -59,7 +59,7 @@ module N65
       promise = assembler.with_saved_state do |saved_assembler|
         @bytes_array.map! do |byte|
           case byte
-          when Fixnum
+          when Integer
             byte
           when String
             saved_assembler.symbol_table.resolve_symbol(byte)
@@ -77,7 +77,7 @@ module N65
         ##  And just write 0xDE for a placeholder
         placeholder_bytes = @bytes_array.map do |byte|
           case bytes
-          when Fixnum
+          when Integer
             byte
           when String
             0xDE
