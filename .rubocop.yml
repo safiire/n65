@@ -13,6 +13,9 @@ Style/Documentation:
 Lint/MissingSuper:
   Enabled: false
 
+Style/ParallelAssignment:
+  Enabled: false
+
 Layout/EmptyLinesAroundAttributeAccessor:
   Enabled: true
 
