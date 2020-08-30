@@ -1,28 +1,33 @@
+# frozen_string_literal: true
+
 require 'json'
 require_relative '../instruction_base'
 
 module N65
-
-  ####
-  ##  This directive instruction can setup an iNES header
   class INESHeader < InstructionBase
     attr_reader :prog, :char, :mapper, :mirror, :battery_backed, :fourscreen_vram, :prog_ram, :tv
 
-    Defaults = {prog: 1, char: 0, mapper: 0, mirror: 0, battery_backed: 0, fourscreen_vram: 0, prog_ram: 0, tv: 0}
+    DEFAULTS = {
+      prog: 1,
+      char: 0,
+      mapper: 0,
+      mirror: 0,
+      battery_backed: 0,
+      fourscreen_vram: 0,
+      prog_ram: 0,
+      tv: 0
+    }.freeze
 
-    ####
-    ##  Implementation of the parser for this directive
     def self.parse(line)
       match_data = line.match(/^\.ines (.+)$/)
       return nil if match_data.nil?
 
       header = JSON.parse(match_data[1])
-      header = header.inject({}) do |hash, (key, val)|
+      header = header.each_with_object({}) do |(key, val), hash|
         hash[key.to_sym] = val
-        hash
       end
 
-      header = Defaults.merge(header)
+      header = DEFAULTS.merge(header)
 
       INESHeader.new(
         header[:prog],
@@ -32,12 +37,11 @@ module N65
         header[:battery_backed],
         header[:fourscreen_vram],
         header[:prog_ram],
-        header[:tv])
+        header[:tv]
+      )
     end
 
-
-    ####
-    ##  Construct a header
+    # Construct a header
     def initialize(prog, char, mapper, mirror, battery_backed, fourscreen_vram, prog_ram, tv)
       @prog = prog
       @char = char
@@ -49,18 +53,13 @@ module N65
       @tv = tv
     end
 
-
-    ####
-    ##  Exec function the assembler will call
+    # Exec function the assembler will call
     def exec(assembler)
       assembler.set_ines_header(self)
     end
 
-
-    ####
-    ##  Emit the header bytes
+    # Emit the header bytes
     def emit_bytes
-
       mapper_lo_nybble = (@mapper & 0x0f)
       mapper_hi_nybble = (@mapper & 0xf0) >> 4
 
@@ -82,16 +81,12 @@ module N65
        0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0]
     end
 
-
-    ####
-    ##  Display
+    # Display
     def to_s
       [".ines {\"prog\": #{@prog}, \"char\": #{@char}, \"mapper\": #{@mapper}, ",
        "\"mirror\": #{@mirror}}, \"battery_backed\": #{@battery_backed}, ",
        "\"fourscreen_vram\": #{@fourscreen_vram}, \"prog_ram\": #{@prog_ram}, ",
        "\"tv\": #{@tv}"].join
     end
-
   end
-
 end

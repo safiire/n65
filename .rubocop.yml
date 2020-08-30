@@ -10,6 +10,9 @@ Style/FormatStringToken:
 Style/Documentation:
   Enabled: false
 
+Lint/MissingSuper:
+  Enabled: false
+
 Layout/EmptyLinesAroundAttributeAccessor:
   Enabled: true
 
@@ -32,9 +35,6 @@ Lint/EmptyConditionalBody:
   Enabled: true
 
 Lint/FloatComparison:
-  Enabled: true
-
-Lint/MissingSuper:
   Enabled: true
 
 Lint/MixedRegexpCaptureTypes:
