@@ -47,7 +47,7 @@ RSpec.describe(N65::MemorySpace) do
     end
   end
 
-  describe '#read' do
+  describe '#read prog rom' do
     let(:address) { 0xC100 }
     let(:mirroed_address) { 0x8100 }
     let(:bank) { described_class.create_prog_rom }
@@ -76,7 +76,27 @@ RSpec.describe(N65::MemorySpace) do
     end
   end
 
-  describe '#write' do
+  describe '#read char rom' do
+    let(:address) { 0x100 }
+    let(:bank) { described_class.create_char_rom }
+    let(:data) { 'hi there'.bytes }
+
+    before { bank.write(address, data) }
+
+    context 'when reading from the bank' do
+      it 'can read from the bank' do
+        expect(bank.read(address, data.size)).to eq(data)
+      end
+    end
+
+    context 'when attempting to read out of bounds' do
+      it 'throws an error' do
+        expect { bank.read(0x2000, 0x10) }.to raise_error(described_class::AccessOutsideCharRom)
+      end
+    end
+  end
+
+  describe '#write prog rom' do
     let(:address) { 0xC100 }
     let(:mirroed_address) { 0x8100 }
     let(:bank) { described_class.create_prog_rom }
@@ -101,6 +121,26 @@ RSpec.describe(N65::MemorySpace) do
 
       it 'throws an error' do
         expect { bank.write(0xffff, data) }.to raise_error(described_class::AccessOutsideProgRom)
+      end
+    end
+  end
+
+  describe '#write char rom' do
+    let(:address) { 0x100 }
+    let(:bank) { described_class.create_char_rom }
+    let(:data) { 'hi there'.bytes }
+
+    before { bank.write(address, data) }
+
+    context 'when reading from the bank' do
+      it 'can read from the bank' do
+        expect(bank.read(address, data.size)).to eq(data)
+      end
+    end
+
+    context 'when attempting to write out of bounds' do
+      it 'throws an error' do
+        expect { bank.write(0x2000, data) }.to raise_error(described_class::AccessOutsideCharRom)
       end
     end
   end
