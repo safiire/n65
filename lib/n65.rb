@@ -194,8 +194,8 @@ module N65
       chars = @virtual_memory[:char]
 
       rom_size  = 0x10
-      rom_size += MemorySpace::BankSizes[:prog] * progs.size
-      rom_size += MemorySpace::BankSizes[:char] * chars.size
+      rom_size += MemorySpace::BANK_SIZES[:prog] * progs.size
+      rom_size += MemorySpace::BANK_SIZES[:char] * chars.size
 
       rom = MemorySpace.new(rom_size, :rom)
 
@@ -203,11 +203,11 @@ module N65
       offset += rom.write(0x0, @ines_header.emit_bytes)
 
       progs.each do |prog|
-        offset += rom.write(offset, prog.read(0x8000, MemorySpace::BankSizes[:prog]))
+        offset += rom.write(offset, prog.read(0x8000, MemorySpace::BANK_SIZES[:prog]))
       end
 
       chars.each do |char|
-        offset += rom.write(offset, char.read(0x0, MemorySpace::BankSizes[:char]))
+        offset += rom.write(offset, char.read(0x0, MemorySpace::BANK_SIZES[:char]))
       end
       rom.emit_bytes.pack('C*')
     end

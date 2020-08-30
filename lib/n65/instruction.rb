@@ -240,7 +240,7 @@ module N65
       when 1
         [@hex]
       when 2
-        if zero_page_instruction? && @arg.netagive? || @arg > 0xff
+        if zero_page_instruction? && @arg.negative? || @arg > 0xff
           raise(ArgumentTooLarge, "For #{@op} in #{@mode} mode, only 8-bit values are allowed")
         end
 
