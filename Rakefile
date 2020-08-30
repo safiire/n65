@@ -14,8 +14,3 @@ end
 task :syntax do
   sh 'find . -name *.rb -type f -exec ruby -c {} \; -exec echo {} \;'
 end
-
-# require 'rake/testtask'
-# Rake::TestTask.new do |t|
-#  t.pattern = 'test/test*.rb'
-# end
