@@ -1,0 +1,6 @@
+
+Layout/LineLength:
+  Max: 120
+
+Naming/MethodParameterName:
+  MinArgNameLength: 1

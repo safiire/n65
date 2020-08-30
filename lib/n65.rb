@@ -8,25 +8,22 @@ module N65
   class Assembler
     attr_reader :program_counter, :current_segment, :current_bank, :symbol_table, :virtual_memory, :promises
 
-    #####  Custom exceptions
     class AddressOutOfRange < StandardError; end
     class InvalidSegment < StandardError; end
     class WriteOutOfBounds < StandardError; end
     class INESHeaderAlreadySet < StandardError; end
     class FileNotFound < StandardError; end
 
-
-    ####
-    ##  Assemble from an asm file to a nes ROM
+    # Assemble from an asm file to a nes ROM
     def self.from_file(infile, options)
-      fail(FileNotFound, infile) unless File.exists?(infile)
+      raise(FileNotFound, infile) unless File.exists?(infile)
 
       assembler = self.new
       program = File.read(infile)
       output_file = options[:output_file]
 
       puts "Building #{infile}" unless options[:quiet]
-      ##  Process each line in the file
+      # Process each line in the file
       program.split(/\n/).each_with_index do |line, line_number|
         begin
           assembler.assemble_one_line(line)
@@ -38,12 +35,12 @@ module N65
       end
       puts unless options[:quiet]
 
-      ##  Second pass to resolve any missing symbols.
+      # Second pass to resolve any missing symbols.
       print "Second pass, resolving symbols..." unless options[:quiet]
       assembler.fulfill_promises
       puts " Done." unless options[:quiet]
 
-      ##  Optionally write out a symbol map
+      # Optionally write out a symbol map
       if options[:write_symbol_table]
         print "Writing symbol table to #{output_file}.yaml..." unless options[:quiet]
         File.open("#{output_file}.yaml", 'w') do |fp|
@@ -52,7 +49,7 @@ module N65
         puts "Done." unless options[:quiet]
       end
 
-      ##  Optionally write out cycle count for subroutines
+      # Optionally write out cycle count for subroutines
       if options[:cycle_count]
         print "Writing subroutine cycle counts to #{output_file}.cycles.yaml..." unless options[:quiet]
         File.open("#{output_file}.cycles.yaml", 'w') do |fp|
@@ -61,7 +58,7 @@ module N65
         puts "Done." unless options[:quiet]
       end
 
-      ##  Emit the complete binary ROM
+      # Emit the complete binary ROM
       rom = assembler.emit_binary_rom
       File.open(output_file, 'w') do |fp|
         fp.write(rom)
@@ -75,9 +72,7 @@ module N65
       end
     end
 
-
-    ####
-    ##  Initialize with a bank 1 of prog space for starters
+    # Initialize with a bank 1 of prog space for starters
     def initialize
       @ines_header = nil
       @program_counter = 0x0
@@ -91,118 +86,97 @@ module N65
       }
     end
 
-
-    ####
-    ##  Return an object that contains the assembler's current state
+    # Return an object that contains the assembler's current state
     def get_current_state
       saved_program_counter, saved_segment, saved_bank = @program_counter, @current_segment, @current_bank
       saved_scope = symbol_table.scope_stack.dup
       OpenStruct.new(program_counter: saved_program_counter, segment: saved_segment, bank: saved_bank, scope: saved_scope)
     end
 
-
-    ####
-    ##  Set the current state from an OpenStruct
+    # Set the current state from an OpenStruct
     def set_current_state(struct)
       @program_counter, @current_segment, @current_bank = struct.program_counter, struct.segment, struct.bank
       symbol_table.scope_stack = struct.scope.dup
     end
 
-
-    ####
-    ##  This is the main assemble method, it parses one line into an object
-    ##  which when given a reference to this assembler, controls the assembler
-    ##  itself through public methods, executing assembler directives, and
-    ##  emitting bytes into our virtual memory spaces.  Empty lines or lines
-    ##  with only comments parse to nil, and we just ignore them.
+    # This is the main assemble method, it parses one line into an object
+    # which when given a reference to this assembler, controls the assembler
+    # itself through public methods, executing assembler directives, and
+    # emitting bytes into our virtual memory spaces.  Empty lines or lines
+    # with only comments parse to nil, and we just ignore them.
     def assemble_one_line(line)
       parsed_object = Parser.parse(line)
 
       unless parsed_object.nil?
         exec_result = parsed_object.exec(self)
 
-        ##  TODO
-        ##  I could perhaps keep a tally of cycles used per top level scope here
+        # TODO: I could perhaps keep a tally of cycles used per top level scope here
         if parsed_object.respond_to?(:cycles)
-          #puts "Line: #{line}"
-          #puts "Cycles #{parsed_object.cycles}"
-          #puts "Sym: #{@symbol_table.scope_stack}"
+          # puts "Line: #{line}"
+          # puts "Cycles #{parsed_object.cycles}"
+          # puts "Sym: #{@symbol_table.scope_stack}"
           @symbol_table.add_cycles(parsed_object.cycles)
         end
 
-        ##  If we have returned a promise save it for the second pass
-        @promises << exec_result if exec_result.kind_of?(Proc)
+        # If we have returned a promise save it for the second pass
+        @promises << exec_result if exec_result.is_a?(Proc)
       end
     end
 
-
-    ####
-    ##  This will empty out our promise queue and try to fullfil operations
-    ##  that required an undefined symbol when first encountered.
+    # This will empty out our promise queue and try to fullfil operations
+    # that required an undefined symbol when first encountered.
     def fulfill_promises
-      while promise = @promises.pop
+      while (promise = @promises.pop)
         promise.call
       end
     end
 
-
-    ####
-    ##  This rewinds the state of the assembler, so a promise can be
-    ##  executed with a previous state, for example if we can't resolve
-    ##  a symbol right now, and want to try during the second pass
+    # This rewinds the state of the assembler, so a promise can be
+    # executed with a previous state, for example if we can't resolve
+    # a symbol right now, and want to try during the second pass
     def with_saved_state(&block)
       ##  Save the current state of the assembler
       old_state = get_current_state
 
       lambda do
-
-        ##  Set the assembler state back to the old state and run the block like that
+        # Set the assembler state back to the old state and run the block like that
         set_current_state(old_state)
         block.call(self)
       end
     end
 
-
-    ####
-    ##  Write to memory space. Typically, we are going to want to write
-    ##  to the location of the current PC, current segment, and current bank.
-    ##  Bounds check is inside MemorySpace#write
+    # Write to memory space. Typically, we are going to want to write
+    # to the location of the current PC, current segment, and current bank.
+    # Bounds check is inside MemorySpace#write
     def write_memory(bytes, pc = @program_counter, segment = @current_segment, bank = @current_bank)
       memory_space = get_virtual_memory_space(segment, bank)
       memory_space.write(pc, bytes)
       @program_counter += bytes.size
     end
 
-
-    ####
-    ##  Set the iNES header
+    # Set the iNES header
     def set_ines_header(ines_header)
-      fail(INESHeaderAlreadySet) unless @ines_header.nil?
+      raise(INESHeaderAlreadySet) unless @ines_header.nil?
+
       @ines_header = ines_header
     end
 
-
-    ####
-    ##  Set the program counter
+    # Set the program counter
     def program_counter=(address)
-      fail(AddressOutOfRange) unless address_within_range?(address)
+      raise(AddressOutOfRange) unless address_within_range?(address)
+
       @program_counter = address
     end
 
-
-    ####
-    ##  Set the current segment, prog or char.
+    # Set the current segment, prog or char.
     def current_segment=(segment)
       segment = segment.to_sym
-      unless valid_segment?(segment)
-        fail(InvalidSegment, "#{segment} is not a valid segment.  Try prog or char")
-      end
+      raise(InvalidSegment, "#{segment} is not a valid segment.  Try prog or char") unless valid_segment?(segment)
+
       @current_segment = segment
     end
 
-
-    ####
-    ##  Set the current bank, create it if it does not exist
+    # Set the current bank, create it if it does not exist
     def current_bank=(bank_number)
       memory_space = get_virtual_memory_space(@current_segment, bank_number)
       if memory_space.nil?
@@ -211,9 +185,6 @@ module N65
       @current_bank = bank_number
     end
 
-
-    ####
-    ##  Emit a binary ROM
     def emit_binary_rom
       progs = @virtual_memory[:prog]
       chars = @virtual_memory[:char]
@@ -237,13 +208,11 @@ module N65
       rom.emit_bytes.pack('C*')
     end
 
-
-    ####
-    ##  Display information about the bank sizes and total usage
+    # TODO: Use StringIO to build output
     def print_bank_usage
       puts
-      puts "ROM Structure {"
-      puts "  iNES 1.0 Header: $10 bytes"
+      puts 'ROM Structure {'
+      puts '  iNES 1.0 Header: $10 bytes'
 
       @virtual_memory[:prog].each_with_index do |prog_rom, bank_number|
         puts "  PROG ROM bank #{bank_number}: #{prog_rom.usage_info}"
@@ -252,33 +221,21 @@ module N65
       @virtual_memory[:char].each_with_index do |char_rom, bank_number|
         puts "  CHAR ROM bank #{bank_number}: #{char_rom.usage_info}"
       end
-      puts "}"
+      puts '}'
     end
-
 
     private
 
-
-    ####
-    ##  Get virtual memory space
     def get_virtual_memory_space(segment, bank_number)
       @virtual_memory[segment][bank_number]
     end
 
-
-    ####
-    ##  Is this a 16-bit address within range?
     def address_within_range?(address)
       address >= 0 && address < 2**16
     end
 
-
-    ####
-    ##  Is this a valid segment?
     def valid_segment?(segment)
-      [:prog, :char].include?(segment)
+      %i[prog char].include?(segment)
     end
-
   end
-
 end
