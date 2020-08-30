@@ -1,6 +1,6 @@
+# frozen_string_literal: true
 
 module N65
-
   require_relative 'instruction'
   require_relative 'directives/ines_header'
   require_relative 'directives/org'
@@ -15,71 +15,53 @@ module N65
   require_relative 'directives/exit_scope'
   require_relative 'directives/space'
 
-
-
-  ####
-  ##  This class determines what sort of line of code we
-  ##  are dealing with, parses one line, and returns an
-  ##  object deriving from InstructionBase
+  # This class determines what sort of line of code we
+  # are dealing with, parses one line, and returns an
+  # object deriving from InstructionBase
   class Parser
-
-    ####  Custom Exceptions
     class CannotParse < StandardError; end
 
+    DIRECTIVES = [INESHeader, Org, Segment, IncBin, Inc, DW, Bytes, ASCII, EnterScope, ExitScope, Space].freeze
 
-    Directives = [INESHeader, Org, Segment, IncBin, Inc, DW, Bytes, ASCII, EnterScope, ExitScope, Space]
-
-    ####
-    ##  Parses a line of program source into an object
-    ##  deriving from base class InstructionBase
+    # Parses a line of program source into an object
+    # deriving from base class InstructionBase
     def self.parse(line)
       sanitized = sanitize_line(line)
       return nil if sanitized.empty?
 
-      ##  First check to see if we have a label.
+      # First check to see if we have a label.
       label = Label.parse(sanitized)
-      unless label.nil?
-        return label
-      end
+      return label unless label.nil?
 
-      ##  Now check if we have a directive
+      # Now check if we have a directive
       directive = parse_directive(sanitized)
-      unless directive.nil?
-        return directive
-      end
+      return directive unless directive.nil?
 
-      ##  Now, surely it is an asm instruction?
+      # Now, surely it is an asm instruction?
       instruction = Instruction.parse(sanitized)
-      unless instruction.nil?
-        return instruction
-      end
+      return instruction unless instruction.nil?
 
-      ##  Guess not, we have no idea
-      fail(CannotParse, sanitized)
+      # Guess not, we have no idea
+      raise(CannotParse, sanitized)
     end
 
-
-    private
-    ####
-    ##  Sanitize one line of program source
+    # Sanitize one line of program source
     def self.sanitize_line(line)
-      code = line.split(';').first || ""
+      code = line.split(';').first || ''
       code.strip.chomp
     end
+    private_class_method :sanitize_line
 
-
-    ####
     ##  Try to Parse a directive
     def self.parse_directive(line)
       if line.start_with?('.')
-        Directives.each do |directive|
+        DIRECTIVES.each do |directive|
           object = directive.parse(line)
           return object unless object.nil?
         end
       end
       nil
     end
-
+    private_class_method :parse_directive
   end
-
 end
