@@ -1,10 +1,11 @@
+# frozen_string_literal: true
+
 require_relative 'n65/version'
 require_relative 'n65/symbol_table'
 require_relative 'n65/memory_space'
 require_relative 'n65/parser'
 
 module N65
-
   class Assembler
     attr_reader :program_counter, :current_segment, :current_bank, :symbol_table, :virtual_memory, :promises
 
@@ -15,10 +16,11 @@ module N65
     class FileNotFound < StandardError; end
 
     # Assemble from an asm file to a nes ROM
+    # TODO: This reall needs a logger instead of all these unless quiet conditions
     def self.from_file(infile, options)
-      raise(FileNotFound, infile) unless File.exists?(infile)
+      raise(FileNotFound, infile) unless File.exist?(infile)
 
-      assembler = self.new
+      assembler = new
       program = File.read(infile)
       output_file = options[:output_file]
 
@@ -28,7 +30,7 @@ module N65
         begin
           assembler.assemble_one_line(line)
         rescue StandardError => e
-          STDERR.puts("\n\n#{e.class}\n#{line}\n#{e}\nOn line #{line_number}")
+          warn("\n\n#{e.class}\n#{line}\n#{e}\nOn line #{line_number}")
           exit(1)
         end
         print '.' unless options[:quiet]
@@ -36,9 +38,9 @@ module N65
       puts unless options[:quiet]
 
       # Second pass to resolve any missing symbols.
-      print "Second pass, resolving symbols..." unless options[:quiet]
+      print 'Second pass, resolving symbols...' unless options[:quiet]
       assembler.fulfill_promises
-      puts " Done." unless options[:quiet]
+      puts ' Done.' unless options[:quiet]
 
       # Optionally write out a symbol map
       if options[:write_symbol_table]
@@ -46,7 +48,7 @@ module N65
         File.open("#{output_file}.yaml", 'w') do |fp|
           fp.write(assembler.symbol_table.export_to_yaml)
         end
-        puts "Done." unless options[:quiet]
+        puts 'Done.' unless options[:quiet]
       end
 
       # Optionally write out cycle count for subroutines
@@ -55,7 +57,7 @@ module N65
         File.open("#{output_file}.cycles.yaml", 'w') do |fp|
           fp.write(assembler.symbol_table.export_cycle_count_yaml)
         end
-        puts "Done." unless options[:quiet]
+        puts 'Done.' unless options[:quiet]
       end
 
       # Emit the complete binary ROM
@@ -64,12 +66,12 @@ module N65
         fp.write(rom)
       end
 
-      unless options[:quiet]
-        rom_size = rom.size
-        rom_size_hex = "%x" % rom_size
-        assembler.print_bank_usage
-        puts "Total size: $#{rom_size_hex}, #{rom_size} bytes"
-      end
+      return if options[:quiet]
+
+      rom_size = rom.size
+      rom_size_hex = format('%x', rom_size)
+      assembler.print_bank_usage
+      puts "Total size: $#{rom_size_hex}, #{rom_size} bytes"
     end
 
     # Initialize with a bank 1 of prog space for starters
@@ -81,8 +83,8 @@ module N65
       @symbol_table = SymbolTable.new
       @promises = []
       @virtual_memory = {
-        :prog => [MemorySpace.create_prog_rom],
-        :char => []
+        prog: [MemorySpace.create_prog_rom],
+        char: []
       }
     end
 
@@ -90,7 +92,12 @@ module N65
     def get_current_state
       saved_program_counter, saved_segment, saved_bank = @program_counter, @current_segment, @current_bank
       saved_scope = symbol_table.scope_stack.dup
-      OpenStruct.new(program_counter: saved_program_counter, segment: saved_segment, bank: saved_bank, scope: saved_scope)
+      OpenStruct.new(
+        program_counter: saved_program_counter,
+        segment: saved_segment,
+        bank: saved_bank,
+        scope: saved_scope
+      )
     end
 
     # Set the current state from an OpenStruct
@@ -106,21 +113,20 @@ module N65
     # with only comments parse to nil, and we just ignore them.
     def assemble_one_line(line)
       parsed_object = Parser.parse(line)
+      return if parsed_object.nil?
 
-      unless parsed_object.nil?
-        exec_result = parsed_object.exec(self)
+      exec_result = parsed_object.exec(self)
 
-        # TODO: I could perhaps keep a tally of cycles used per top level scope here
-        if parsed_object.respond_to?(:cycles)
-          # puts "Line: #{line}"
-          # puts "Cycles #{parsed_object.cycles}"
-          # puts "Sym: #{@symbol_table.scope_stack}"
-          @symbol_table.add_cycles(parsed_object.cycles)
-        end
-
-        # If we have returned a promise save it for the second pass
-        @promises << exec_result if exec_result.is_a?(Proc)
+      # TODO: I could perhaps keep a tally of cycles used per top level scope here
+      if parsed_object.respond_to?(:cycles)
+        # puts "Line: #{line}"
+        # puts "Cycles #{parsed_object.cycles}"
+        # puts "Sym: #{@symbol_table.scope_stack}"
+        @symbol_table.add_cycles(parsed_object.cycles)
       end
+
+      # If we have returned a promise save it for the second pass
+      @promises << exec_result if exec_result.is_a?(Proc)
     end
 
     # This will empty out our promise queue and try to fullfil operations
@@ -179,9 +185,7 @@ module N65
     # Set the current bank, create it if it does not exist
     def current_bank=(bank_number)
       memory_space = get_virtual_memory_space(@current_segment, bank_number)
-      if memory_space.nil?
-        @virtual_memory[@current_segment][bank_number] = MemorySpace.create_bank(@current_segment)
-      end
+      @virtual_memory[@current_segment][bank_number] = MemorySpace.create_bank(@current_segment) if memory_space.nil?
       @current_bank = bank_number
     end
 
