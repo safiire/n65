@@ -92,19 +92,27 @@ module N65
     def normalize_address(address)
       case @type
       when :prog
-        return (address - 0x8000) if address_inside_prog_rom1?(address)
-        return (address - 0xC000) if address_inside_prog_rom2?(address)
-
-        raise(AccessOutsideProgRom, format('Address $%.4X is outside PROG ROM', address))
+        normalize_prog_rom_address(address)
       when :char
-        unless address_inside_char_rom?(address)
-          raise(AccessOutsideCharRom, format('Address $%.4X is outside CHAR ROM', address))
-        end
-
-        address
+        normalize_char_rom_address(address)
       else
         address
       end
+    end
+
+    def normalize_prog_rom_address(address)
+      return (address - 0x8000) if address_inside_prog_rom1?(address)
+      return (address - 0xC000) if address_inside_prog_rom2?(address)
+
+      message = 'Address $%.4X is outside PROG ROM'
+      raise(AccessOutsideProgRom, format(message, address))
+    end
+
+    def normalize_char_rom_address(address)
+      return address if address_inside_char_rom?(address)
+
+      message = 'Address $%.4X is outside CHAR ROM'
+      raise(AccessOutsideCharRom, format(message, address))
     end
 
     def address_inside_prog_rom1?(address)
