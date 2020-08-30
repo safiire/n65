@@ -1,13 +1,10 @@
 gem 'minitest'
 require 'minitest/autorun'
 require 'minitest/unit'
-
-require_relative '../lib/n65.rb'
-
+require_relative '../lib/n65'
 
 class TestArithmeticSymbols < MiniTest::Test
   include N65
-
 
   def test_identify_plain_symbol
     re = Regexp.new(Regexes::Sym)
@@ -16,13 +13,11 @@ class TestArithmeticSymbols < MiniTest::Test
     assert_match(re, 'global.animal.dog')
   end
 
-
   def test_symbol_values
     st = SymbolTable.new
     st.define_symbol('variable', 0xff)
     assert_equal(0xff, st.resolve_symbol('variable'))
   end
-
 
   def test_perform_symbolic_arithmetic
     st = SymbolTable.new
@@ -30,7 +25,6 @@ class TestArithmeticSymbols < MiniTest::Test
     assert_equal(0x21, st.resolve_symbol('variable+1'))
     assert_equal(0x40, st.resolve_symbol('variable*2'))
   end
-
 
   def test_symbol_addition
     program = <<-ASM
@@ -72,7 +66,4 @@ class TestArithmeticSymbols < MiniTest::Test
     ]
     assert_equal(binary, correct)
   end
-
-
 end
-
