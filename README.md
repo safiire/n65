@@ -71,22 +71,6 @@ The 2A03 is an 8-bit processor based on the MOS 6502.
   There is an example file included (shown below) that is a modified port of
   the NES101 tutorial by Michael Martin.
 
-# MIDI converter
-
-  Included in the utils/midi directory is a my first version of a MIDI
-  to NES music converter, which is composed of a Ruby script backed
-  by a C++ program I wrote to parse MIDI files into YAML data.
-
-  At present, it can convert a MIDI file to a binary stream of values
-  that, when written to the APU in your 60hz VBlank, can be played
-  by the included sound driver code.
-
-  The idea is to be able to compose music for the NES using your 
-  favourite digital audio workstation in MIDI, and be able to convert
-  the square, triangle, and noise sequences to something playable
-  on the NES.
-
-
 # Some new additions:
   - .byte can now handle hex and binary literals, and symbols
   - First version of Midi to NES music converter
@@ -121,8 +105,5 @@ The 2A03 is an 8-bit processor based on the MOS 6502.
   - Tested a ROM that changes background color
 
 # Some Todos:
-  - Create NES music from MIDI files easily
   - Make macros that can be used interchangably inline or as a subroutine
   - Create a library for common operations, DMA, sound, etc both inline and subroutine options
-  - Create an interactive read eval compile loop?
-
