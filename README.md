@@ -3,8 +3,6 @@
 This is an assembler for the Nintendo Entertainment System's 2A03
 microprocessor.  
 
-![N65](https://github.com/safiire/n65/workflows/Ruby/badge.svg)
-
 The 2A03 is an 8-bit processor based on the MOS 6502.
 
  ```bash
