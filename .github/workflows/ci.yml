@@ -1,4 +1,4 @@
-name: Ruby
+name: N64 CI
 
 on:
   push:
