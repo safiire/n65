@@ -129,6 +129,14 @@ module N65
       @promises << exec_result if exec_result.is_a?(Proc)
     end
 
+    # Assemble the given string
+    def assemble_string(string)
+      string.split(/\n/).each do |line| 
+        assemble_one_line(line)
+      end
+      fulfill_promises
+    end
+
     # This will empty out our promise queue and try to fullfil operations
     # that required an undefined symbol when first encountered.
     def fulfill_promises

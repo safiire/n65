@@ -168,10 +168,7 @@ RSpec.describe(N65::SymbolTable) do
       ASM
     end
 
-    before do
-      program.split(/\n/).each { |line| assembler.assemble_one_line(line) }
-      assembler.fulfill_promises
-    end
+    before { assembler.assemble_string(program) }
 
     it 'assigns the value of the scope main to the program counter value' do
       expect(assembler.symbol_table.resolve_symbol('global.main')).to eq(0x8000)
@@ -199,7 +196,6 @@ RSpec.describe(N65::SymbolTable) do
     end
     let(:correct_binary) do
       [
-        0x4e, 0x45, 0x53, 0x1a, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
         0x78,        # SEI
         0xd8,        # CLD
         0xa9, 0x0,   # LDA immediate 0
@@ -210,12 +206,9 @@ RSpec.describe(N65::SymbolTable) do
         0x60         # RTS forward_symbol
       ]
     end
-    let(:emitted_rom) { assembler.emit_binary_rom.bytes[0...26] }
+    let(:emitted_rom) { assembler.emit_binary_rom.bytes[16...26] }
 
-    before do
-      program.split(/\n/).each { |line| assembler.assemble_one_line(line) }
-      assembler.fulfill_promises
-    end
+    before { assembler.assemble_string(program) }
 
     it 'assembles the branch to forward_symbol correctly' do
       expect(emitted_rom).to eq(correct_binary)
