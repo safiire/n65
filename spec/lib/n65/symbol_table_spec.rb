@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require_relative '../../../lib/n65/symbol_table'
 require_relative '../../../lib/n65'
+require_relative '../../../lib/n65/symbol_table'
 
 RSpec.describe(N65::SymbolTable) do
   subject { described_class.new }
