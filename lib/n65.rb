@@ -26,7 +26,7 @@ module N65
 
       puts "Building #{infile}" unless options[:quiet]
       # Process each line in the file
-      program.split(/\n/).each_with_index do |line, line_number|
+      program.each_line.each_with_index do |line, line_number|
         begin
           assembler.assemble_one_line(line)
         rescue StandardError => e
@@ -131,7 +131,7 @@ module N65
 
     # Assemble the given string
     def assemble_string(string)
-      string.split(/\n/).each do |line|
+      string.each_line do |line|
         assemble_one_line(line)
       end
       fulfill_promises
