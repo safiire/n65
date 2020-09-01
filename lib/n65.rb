@@ -131,7 +131,7 @@ module N65
 
     # Assemble the given string
     def assemble_string(string)
-      string.split(/\n/).each do |line| 
+      string.split(/\n/).each do |line|
         assemble_one_line(line)
       end
       fulfill_promises
@@ -140,28 +140,22 @@ module N65
     # This will empty out our promise queue and try to fullfil operations
     # that required an undefined symbol when first encountered.
     def fulfill_promises
-      while (promise = @promises.pop)
-        promise.call
-      end
+      @promises.pop.call while @promises.any?
     end
 
     # This rewinds the state of the assembler, so a promise can be
     # executed with a previous state, for example if we can't resolve
     # a symbol right now, and want to try during the second pass
     def with_saved_state(&block)
-      ##  Save the current state of the assembler
-      old_state = get_current_state
-
+      saved_state = get_current_state
       lambda do
-        # Set the assembler state back to the old state and run the block like that
-        set_current_state(old_state)
+        set_current_state(saved_state)
         block.call(self)
       end
     end
 
     # Write to memory space. Typically, we are going to want to write
     # to the location of the current PC, current segment, and current bank.
-    # Bounds check is inside MemorySpace#write
     def write_memory(bytes, pc = @program_counter, segment = @current_segment, bank = @current_bank)
       memory_space = get_virtual_memory_space(segment, bank)
       memory_space.write(pc, bytes)
