@@ -1,6 +1,6 @@
-demo.asm
 *.nes
 *.nes.yaml
+*.nes.cycles.yaml
 .DS_Store
 Desktop.ini
 Thumbs.db

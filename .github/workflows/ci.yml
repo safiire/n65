@@ -1,4 +1,4 @@
-name: N65 CI
+name: N65
 
 on:
   push:

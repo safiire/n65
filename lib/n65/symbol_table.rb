@@ -4,7 +4,6 @@ module N65
   class SymbolTable
     attr_accessor :scope_stack
 
-    # Custom Exceptions
     class InvalidScope < StandardError; end
     class UndefinedSymbol < StandardError; end
     class CantExitScope < StandardError; end
