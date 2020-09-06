@@ -3,7 +3,7 @@
 This is an assembler for the Nintendo Entertainment System's 2A03
 microprocessor.  
 
-![N65 CI](https://github.com/safiire/n65/workflows/N65%20CI/badge.svg)
+![N65](https://github.com/safiire/n65/workflows/N65/badge.svg)
 
 The 2A03 is an 8-bit processor based on the MOS 6502.
 
