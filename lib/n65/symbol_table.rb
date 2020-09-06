@@ -54,7 +54,7 @@ module N65
       scope[symbol.to_sym] = value
     end
 
-    # Separate arithmetic from scope name
+    # Separate arithmetic from symbol
     def find_arithmetic(name)
       last_name = name.split('.').last
       md = last_name.match(%r{([+\-*/])(\d+)$})
@@ -62,7 +62,7 @@ module N65
 
       unless md.nil?
         full_match, operator, argument = md.to_a
-        name.gsub!(full_match, '')
+        name = name.gsub(full_match, '')
         f = ->(value) { value.send(operator.to_sym, argument.to_i) }
       end
 

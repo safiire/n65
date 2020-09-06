@@ -203,7 +203,7 @@ RSpec.describe(N65::SymbolTable) do
         0xea,        # NOP
         0xea,        # NOP
         0xea,        # NOP
-        0x60         # RTS forward_symbol
+        0x60         # RTS
       ]
     end
     let(:emitted_rom) { assembler.emit_binary_rom.bytes[16...26] }
@@ -211,6 +211,80 @@ RSpec.describe(N65::SymbolTable) do
     before { assembler.assemble_string(program) }
 
     it 'assembles the branch to forward_symbol correctly' do
+      expect(emitted_rom).to eq(correct_binary)
+    end
+  end
+
+  context 'when setting a symbols value' do
+    before do
+      subject.define_symbol('variable', 0xff)
+    end
+
+    it 'can resolve to that value' do
+      expect(subject.resolve_symbol('variable')).to eq(0xff)
+    end
+  end
+
+  context 'when performing artithmetic on a symbol' do
+    before do
+      subject.define_symbol('variable', 0x20)
+    end
+
+    it 'can perform addition on the symbol' do
+      expect(subject.resolve_symbol('variable+1')).to eq(0x21)
+    end
+
+    it 'can perform subtraction on the symbol' do
+      expect(subject.resolve_symbol('variable-16')).to eq(0x10)
+    end
+
+    it 'can perform multiplication on the symbol' do
+      expect(subject.resolve_symbol('variable*2')).to eq(0x40)
+    end
+
+    it 'can perform division on the symbol' do
+      expect(subject.resolve_symbol('variable/2')).to eq(0x10)
+    end
+  end
+
+  context 'when performing arithmetic on a scope struct' do
+    let(:assembler) { N65::Assembler.new }
+    let(:program) do
+      <<~'ASM'
+        .ines {"prog": 1, "char": 0, "mapper": 0, "mirror": 0}
+
+        .org $0020
+        .scope struct
+          .space a 1
+          .space b 1
+        .
+
+        .org $8000
+        .scope main
+          sei
+          cld
+          lda struct+1 zp
+          lda struct*2 zp
+          rts
+        .
+      ASM
+    end
+    let(:emitted_rom) { assembler.emit_binary_rom.bytes[16...23] }
+    let(:correct_binary) do
+      [
+        0x78,         #  sei
+        0xd8,         #  cld
+        0xa5,         #  lda
+        0x21,         #  $20 + 1
+        0xa5,         #  lda
+        0x40,         #  $20 * 2
+        0x60          #  rts
+      ]
+    end
+
+    before { assembler.assemble_string(program) }
+
+    it 'assembles the symbol arithmetic correctly' do
       expect(emitted_rom).to eq(correct_binary)
     end
   end
