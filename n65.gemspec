@@ -10,9 +10,9 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Safiire']
   spec.email         = ['safiire@irkenkitties.com']
   spec.summary       = 'An NES assembler for the 6502 microprocessor'
-  spec.description   = 'An NES assembler for the 6502 microprocessor'
+  spec.description   = 'An NES assembler for the 6502 microprocessor in pure Ruby'
   spec.homepage      = 'http://github.com/safiire/n65'
-  spec.license       = 'GPL2'
+  spec.license       = 'GPL-2.0-or-later'
 
   spec.files         = `git ls-files -z`.split("\x0")
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
