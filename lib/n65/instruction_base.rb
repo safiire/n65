@@ -3,15 +3,15 @@
 module N65
   class InstructionBase
     def self.parse(_line)
-      raise(NotImplementedError, "#{self.class.name} must implement self.parse")
+      raise(NotImplementedError, "#{self.class.name} must implement #{__method__}")
+    end
+
+    def exec(_assembler)
+      raise(NotImplementedError, "#{self.class.name} must implement #{__method__}")
     end
 
     def unresolved_symbols?
       false
-    end
-
-    def exec(_assembler)
-      raise(NotImplementedError, "#{self.class.name} must implement exec")
     end
   end
 end
