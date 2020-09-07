@@ -135,6 +135,7 @@ module N65
         assemble_one_line(line)
       end
       fulfill_promises
+      self
     end
 
     # This will empty out our promise queue and try to fullfil operations
