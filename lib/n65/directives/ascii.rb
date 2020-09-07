@@ -13,7 +13,6 @@ module N65
     end
 
     def initialize(string)
-      super
       @string = string
     end
 

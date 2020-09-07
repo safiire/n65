@@ -40,7 +40,6 @@ module N65
 
     # Initialize with a byte array
     def initialize(bytes_array)
-      super
       @bytes_array = bytes_array
     end
 
