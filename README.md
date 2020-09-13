@@ -1,4 +1,4 @@
-# N65 NES assembler version 0.5
+# N65 NES assembler
 
 This is an assembler for the Nintendo Entertainment System's 2A03
 microprocessor.  
