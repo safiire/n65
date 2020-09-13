@@ -119,9 +119,6 @@ module N65
 
       # TODO: I could perhaps keep a tally of cycles used per top level scope here
       if parsed_object.respond_to?(:cycles)
-        # puts "Line: #{line}"
-        # puts "Cycles #{parsed_object.cycles}"
-        # puts "Sym: #{@symbol_table.scope_stack}"
         @symbol_table.add_cycles(parsed_object.cycles)
       end
 
