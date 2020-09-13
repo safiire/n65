@@ -16,7 +16,7 @@ module N65
     class FileNotFound < StandardError; end
 
     # Assemble from an asm file to a nes ROM
-    # TODO: This reall needs a logger instead of all these unless quiet conditions
+    # TODO: This really needs a logger instead of all these unless quiet conditions
     def self.from_file(infile, options)
       raise(FileNotFound, infile) unless File.exist?(infile)
 
