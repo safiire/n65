@@ -15,7 +15,9 @@ module N65
     class INESHeaderAlreadySet < StandardError; end
     class FileNotFound < StandardError; end
 
-    # Assemble from an asm file to a nes ROM
+    State = Data.define(:program_counter, :segment, :bank, :scope)
+
+    # Assemble from an asm file to a NES ROM
     # TODO: This really needs a logger instead of all these unless quiet conditions
     def self.from_file(infile, options)
       raise(FileNotFound, infile) unless File.exist?(infile)
@@ -92,18 +94,13 @@ module N65
     def get_current_state
       saved_program_counter, saved_segment, saved_bank = @program_counter, @current_segment, @current_bank
       saved_scope = symbol_table.scope_stack.dup
-      OpenStruct.new(
-        program_counter: saved_program_counter,
-        segment: saved_segment,
-        bank: saved_bank,
-        scope: saved_scope
-      )
+      State.new(saved_program_counter, saved_segment, saved_bank, saved_scope)
     end
 
-    # Set the current state from an OpenStruct
-    def set_current_state(struct)
-      @program_counter, @current_segment, @current_bank = struct.program_counter, struct.segment, struct.bank
-      symbol_table.scope_stack = struct.scope.dup
+    # Set the current state
+    def set_current_state(state)
+      @program_counter, @current_segment, @current_bank = state.program_counter, state.segment, state.bank
+      symbol_table.scope_stack = state.scope.dup
     end
 
     # This is the main assemble method, it parses one line into an object

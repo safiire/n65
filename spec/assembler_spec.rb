@@ -10,7 +10,7 @@ RSpec.describe(N65::Assembler) do
     end
 
     let(:source) do
-      File.read(File.join(examples, filename))
+      File.read(filename)
     end
 
     let(:assembler) do
@@ -18,7 +18,9 @@ RSpec.describe(N65::Assembler) do
     end
 
     let(:binary) do
-      assembler.assemble_string(source).emit_binary_rom
+      Dir.chdir(examples) do
+        assembler.assemble_string(source).emit_binary_rom
+      end
     end
 
     let(:sha256) do
@@ -70,7 +72,7 @@ RSpec.describe(N65::Assembler) do
       end
     end
 
-    context 'when assembling mario2.asm', skip: '.incbin include path should be relative to source file' do
+    context 'when assembling mario2.asm' do
       let(:filename) { 'mario2.asm' }
       let(:expected) { '0974b799eac7ffb8835fcbd518a5cdeeec734d5d9476cd11cb6b75491c6ef488' }
 
